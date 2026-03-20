@@ -86,14 +86,14 @@ function mapDBStats(dbStats: StatFromDB[]): StatItem[] {
 }
 
 export default function StatsCounter({ stats: statsProp }: { stats?: StatFromDB[] | null }) {
-  if (!statsProp || statsProp.length === 0) return null;
-
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const stats: StatItem[] = mapDBStats(statsProp);
+  const stats: StatItem[] = statsProp && statsProp.length > 0 ? mapDBStats(statsProp) : [];
 
   useEffect(() => {
+    if (stats.length === 0) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -109,7 +109,9 @@ export default function StatsCounter({ stats: statsProp }: { stats?: StatFromDB[
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [stats.length]);
+
+  if (stats.length === 0) return null;
 
   return (
     <section ref={sectionRef} className="section-padding bg-brand">

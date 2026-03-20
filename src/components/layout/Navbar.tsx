@@ -53,7 +53,6 @@ interface NavbarProps {
 const Navbar = ({ navLinks }: NavbarProps) => {
   const { data: menuData, isLoading: menuLoading } = useMenu();
   const menuItems: NavItem[] = menuData ?? navLinks ?? defaultNavLinks;
-  const showMenu = !menuLoading || !!navLinks;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
