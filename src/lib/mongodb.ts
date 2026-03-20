@@ -1,20 +1,21 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
-  );
-}
-
-// Single connection — called once at server startup via instrumentation.ts
+// Read MONGODB_URI inside the function, not at module load time.
+// On Vercel serverless, env vars may not be available at import time.
 export async function connectDB() {
   if (mongoose.connection.readyState >= 1) {
     return;
   }
 
-  await mongoose.connect(MONGODB_URI, {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    throw new Error(
+      "Please define the MONGODB_URI environment variable inside .env.local"
+    );
+  }
+
+  await mongoose.connect(uri, {
     bufferCommands: true,
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 5000,
