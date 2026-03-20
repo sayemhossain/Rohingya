@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-helpers";
 import ContactMessage from "@/models/ContactMessage";

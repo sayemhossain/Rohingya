@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import TeamMember from "@/models/TeamMember";
 import { revalidateTeam } from "@/lib/revalidate";

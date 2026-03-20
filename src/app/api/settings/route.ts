@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import SiteSettings from "@/models/SiteSettings";
 import { revalidateSettings } from "@/lib/revalidate";

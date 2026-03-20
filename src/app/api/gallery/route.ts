@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import Gallery from "@/models/Gallery";
 import { revalidateGallery } from "@/lib/revalidate";
