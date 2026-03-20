@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth-helpers";
 import News from "@/models/News";
 import ContactMessage from "@/models/ContactMessage";
@@ -11,6 +12,7 @@ import Sector from "@/models/Sector";
 
 export async function GET() {
   try {
+    await connectDB();
     const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

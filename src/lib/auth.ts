@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import User from '@/models/User';
+import { connectDB } from '@/lib/mongodb';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,6 +13,8 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        await connectDB();
+
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Please provide email and password');
         }

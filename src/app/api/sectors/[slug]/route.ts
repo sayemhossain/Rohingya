@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { connectDB } from "@/lib/mongodb";
 import Sector from "@/models/Sector";
 import { revalidateSectors } from "@/lib/revalidate";
 
@@ -10,6 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await connectDB();
     const { slug } = await params;
     const sector = await Sector.findOne({ slug });
 
@@ -38,6 +40,7 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await connectDB();
     const { slug } = await params;
     const body = await request.json();
 
@@ -80,6 +83,7 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await connectDB();
     const { slug } = await params;
     const sector = await Sector.findOneAndDelete({ slug });
 

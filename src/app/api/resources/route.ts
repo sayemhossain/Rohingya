@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import Resource from "@/models/Resource";
 import { revalidateResources } from "@/lib/revalidate";
 
 export async function GET(request: NextRequest) {
   try {
+    await connectDB();
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const limit = searchParams.get("limit");
@@ -45,6 +47,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB();
     const body = await request.json();
     const resource = await Resource.create(body);
 
@@ -71,6 +74,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    await connectDB();
     const body = await request.json();
     const { _id, ...updateData } = body;
 
@@ -107,6 +111,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    await connectDB();
     const body = await request.json();
     const { _id } = body;
 

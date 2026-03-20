@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth-helpers";
 import SiteSettings from "@/models/SiteSettings";
 
 export async function GET() {
   try {
+    await connectDB();
     const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -22,6 +24,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    await connectDB();
     const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

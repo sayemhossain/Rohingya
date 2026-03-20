@@ -1,12 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import News from "@/models/News";
 import Sector from "@/models/Sector";
 import SiteSettings from "@/models/SiteSettings";
 
 export async function GET() {
   try {
+    await connectDB();
     const [news, sectors, heroSlidesDoc, statsDoc, partnerLogosDoc] =
       await Promise.all([
         News.find({ published: true }).sort({ createdAt: -1 }).limit(3).lean(),

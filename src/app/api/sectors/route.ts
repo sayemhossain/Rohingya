@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import Sector from "@/models/Sector";
 import { revalidateSectors } from "@/lib/revalidate";
 
 export async function GET() {
   try {
+    await connectDB();
     const sectors = await Sector.find({}).sort({ order: 1 });
 
     return NextResponse.json(
@@ -23,6 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB();
     const body = await request.json();
     const sector = await Sector.create(body);
 

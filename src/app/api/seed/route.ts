@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import bcryptjs from "bcryptjs";
 import User from "@/models/User";
 import SiteSettings from "@/models/SiteSettings";
@@ -20,6 +21,7 @@ export async function GET() {
   }
 
   try {
+    await connectDB();
     const results: Record<string, string> = {};
 
     // ─── 1. Seed Superadmin User ────────────────────────────────────────

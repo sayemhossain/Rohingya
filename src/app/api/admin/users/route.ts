@@ -1,12 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import { requireSuperAdmin } from "@/lib/auth-helpers";
 import User from "@/models/User";
 import bcryptjs from "bcryptjs";
 
 export async function GET() {
   try {
+    await connectDB();
     const session = await requireSuperAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -23,6 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB();
     const session = await requireSuperAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

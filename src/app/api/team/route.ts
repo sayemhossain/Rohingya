@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import TeamMember from "@/models/TeamMember";
 import { revalidateTeam } from "@/lib/revalidate";
 
 export async function GET() {
   try {
+    await connectDB();
     const members = await TeamMember.find().sort({ order: 1, createdAt: -1 });
 
     return NextResponse.json(
@@ -23,6 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB();
     const body = await request.json();
     const { name, role, bio, photo, order } = body;
 

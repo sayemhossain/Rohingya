@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth-helpers";
 import ContactMessage from "@/models/ContactMessage";
 
 export async function GET() {
   try {
+    await connectDB();
     const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
