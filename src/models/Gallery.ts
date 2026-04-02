@@ -28,7 +28,7 @@ const GallerySchema = new Schema<IGallery>(
     },
     category: {
       type: String,
-      enum: ['Camps', 'Education', 'Health', 'Community', 'General'],
+      enum: ['Camps', 'Education', 'Health', 'Community', 'General', 'Agriculture', 'WaSH', 'Protection', 'DRR', 'Nutrition', 'Climate Change'],
       default: 'General',
     },
     featured: {

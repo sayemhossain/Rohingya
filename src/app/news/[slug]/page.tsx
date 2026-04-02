@@ -68,10 +68,7 @@ export default function NewsDetailPage() {
 
   const gradient = gradientMap[article.category] || gradientMap.General;
 
-  // Split content into paragraphs for rendering
-  const bodyParagraphs = article.content
-    ? article.content.split(/\n\n|\n/).filter((p: string) => p.trim())
-    : [];
+  const htmlContent = article.content || "";
 
   return (
     <>
@@ -141,11 +138,10 @@ export default function NewsDetailPage() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               <article className="prose prose-lg max-w-none">
-                {bodyParagraphs.map((paragraph: string, i: number) => (
-                  <p key={i} className="text-gray-700 leading-relaxed mb-6">
-                    {paragraph}
-                  </p>
-                ))}
+                <div
+                  className="prose prose-gray max-w-none [&>p]:text-gray-700 [&>p]:leading-relaxed [&>p]:mb-6"
+                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                />
               </article>
 
               {/* Share Section */}

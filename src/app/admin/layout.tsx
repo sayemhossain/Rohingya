@@ -17,6 +17,7 @@ import {
   HiLogout,
   HiMenuAlt2,
   HiX,
+  HiInformationCircle,
 } from "react-icons/hi";
 
 interface NavItem {
@@ -28,6 +29,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: HiHome },
+  { label: "About Page", href: "/admin/about", icon: HiInformationCircle },
   { label: "News", href: "/admin/news", icon: HiNewspaper },
   { label: "Sectors", href: "/admin/sectors", icon: HiViewGrid },
   { label: "Resources", href: "/admin/resources", icon: HiDocument },
@@ -110,7 +112,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-5 py-4">
           <Link href="/admin" className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-accent font-heading text-sm font-bold text-white">
-              R
+              A
             </div>
             <span className="font-heading text-lg font-semibold tracking-tight">
               Admin Panel

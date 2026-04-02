@@ -10,6 +10,7 @@ import News from "@/models/News";
 import Resource from "@/models/Resource";
 import Gallery from "@/models/Gallery";
 import TeamMember from "@/models/TeamMember";
+import AboutContent from "@/models/AboutContent";
 
 export async function GET() {
   // Block in production
@@ -59,50 +60,50 @@ export async function GET() {
         value: [
           { label: "Home", href: "/", order: 0 },
           { label: "About", href: "/about", order: 1 },
-          { label: "Crisis Overview", href: "/crisis-overview", order: 2 },
           {
             label: "Sectors",
             href: "/sectors",
-            order: 3,
+            order: 2,
             children: [
-              { label: "Education", href: "/sectors/education" },
-              { label: "Healthcare", href: "/sectors/healthcare" },
-              { label: "Shelter", href: "/sectors/shelter" },
-              { label: "WASH", href: "/sectors/wash" },
-              { label: "Food Security", href: "/sectors/food-security" },
-              { label: "Protection", href: "/sectors/protection" },
-              { label: "Livelihoods", href: "/sectors/livelihoods" },
+              { label: "Health", href: "/sectors/health" },
               { label: "Nutrition", href: "/sectors/nutrition" },
+              { label: "Education", href: "/sectors/education" },
+              { label: "WaSH", href: "/sectors/wash" },
+              { label: "Food Security & Livelihood", href: "/sectors/food-security-and-livelihood" },
+              { label: "DRR", href: "/sectors/drr" },
+              { label: "Climate Change", href: "/sectors/climate-change" },
+              { label: "Protection", href: "/sectors/protection" },
+              { label: "Agriculture", href: "/sectors/agriculture" },
             ],
           },
-          { label: "News & Stories", href: "/news", order: 4 },
-          { label: "Resources", href: "/resources", order: 5 },
-          { label: "Gallery", href: "/gallery", order: 6 },
-          { label: "Get Involved", href: "/get-involved", order: 7 },
-          { label: "Contact", href: "/contact", order: 8 },
+          { label: "News & Stories", href: "/news", order: 3 },
+          { label: "Resources", href: "/resources", order: 4 },
+          { label: "Gallery", href: "/gallery", order: 5 },
+          { label: "Get Involved", href: "/get-involved", order: 6 },
+          { label: "Contact", href: "/contact", order: 7 },
         ],
       },
       {
         key: "hero_slides",
         value: [
           {
-            title: "Standing With the Rohingya",
+            title: "Empowering Communities Since 2002",
             subtitle:
-              "Supporting over one million refugees in Cox's Bazar through humanitarian aid, education, and sustainable development.",
+              "AROHI works for socio-economic development of disadvantaged people across Barisal Division, Southern Bangladesh.",
             ctaText: "Learn More",
-            ctaLink: "/crisis-overview",
+            ctaLink: "/about",
           },
           {
-            title: "Education for Every Child",
+            title: "Health, Nutrition & Education for All",
             subtitle:
-              "Providing quality learning opportunities to Rohingya children and youth displaced by crisis.",
+              "Providing essential health services, nutrition support, and quality education to vulnerable communities in rural and remote areas.",
             ctaText: "Our Programs",
-            ctaLink: "/sectors/education",
+            ctaLink: "/sectors/health",
           },
           {
-            title: "Building Resilient Communities",
+            title: "Building Resilience Against Climate Change",
             subtitle:
-              "Empowering refugees and host communities through livelihood programs and skills training.",
+              "Strengthening disaster preparedness, promoting climate adaptation, and supporting sustainable livelihoods for coastal communities.",
             ctaText: "Get Involved",
             ctaLink: "/get-involved",
           },
@@ -111,23 +112,23 @@ export async function GET() {
       {
         key: "stats",
         value: [
-          { label: "Refugees in Bangladesh", value: "1,200,000", icon: "Users" },
-          { label: "Refugee Camps", value: "33", icon: "Home" },
-          { label: "Funding Needed (USD)", value: "876M", icon: "DollarSign" },
-          { label: "Humanitarian Partners", value: "150+", icon: "Handshake" },
+          { label: "Years of Service", value: "23+", icon: "Calendar" },
+          { label: "Working Districts", value: "3", icon: "MapPin" },
+          { label: "Beneficiaries Reached", value: "50,000+", icon: "Users" },
+          { label: "Active Programs", value: "17+", icon: "Briefcase" },
         ],
       },
       {
         key: "partner_logos",
         value: [
-          { name: "UNHCR", logo: "" },
-          { name: "UNICEF", logo: "" },
-          { name: "WFP", logo: "" },
-          { name: "WHO", logo: "" },
-          { name: "IOM", logo: "" },
-          { name: "BRAC", logo: "" },
-          { name: "Save the Children", logo: "" },
-          { name: "MSF", logo: "" },
+          { name: "NGO Forum for Public Health", logo: "" },
+          { name: "Department of Social Welfare", logo: "" },
+          { name: "USAID-DAI", logo: "" },
+          { name: "World Bank", logo: "" },
+          { name: "DPHE", logo: "" },
+          { name: "Department of Agriculture", logo: "" },
+          { name: "ACDI/VOCA", logo: "" },
+          { name: "The Hunger Project", logo: "" },
         ],
       },
     ];
@@ -150,283 +151,318 @@ export async function GET() {
 
     const sectorsToSeed = [
       {
-        name: "Education",
-        slug: "education",
-        description:
-          "Providing quality education and learning opportunities to Rohingya children and youth in refugee camps.",
-        icon: "GraduationCap",
-        order: 1,
-        stats: [
-          { label: "Learning Centers", value: "3,200+", icon: "School" },
-          { label: "Students Enrolled", value: "450,000", icon: "Users" },
-          { label: "Teachers Trained", value: "12,000", icon: "Award" },
-        ],
-        programs: [
-          {
-            title: "Early Childhood Development",
-            description:
-              "Age-appropriate learning programs for children aged 3–5 in safe and stimulating environments.",
-          },
-          {
-            title: "Primary & Secondary Education",
-            description:
-              "Structured curriculum delivery aligned with the Myanmar Curriculum for grades 1–10.",
-          },
-          {
-            title: "Skills-Based Training",
-            description:
-              "Vocational and life skills training for adolescents and youth to build future livelihoods.",
-          },
-        ],
-        achievements: [
-          "Established over 3,200 temporary learning centers across 33 camps",
-          "Enrolled 450,000+ children in formal and non-formal education programs",
-          "Trained 12,000 volunteer teachers from the Rohingya community",
-        ],
-      },
-      {
         name: "Health",
         slug: "health",
         description:
-          "Delivering essential healthcare services including primary care, maternal health, and disease prevention.",
+          "Delivering essential healthcare services to rural and remote communities including maternal health, child health, and disease prevention across Barisal Division.",
         icon: "HeartPulse",
-        order: 2,
+        order: 1,
         stats: [
-          { label: "Health Facilities", value: "350+", icon: "Hospital" },
-          { label: "Consultations/Month", value: "800,000", icon: "Stethoscope" },
-          { label: "Vaccinated Children", value: "500,000+", icon: "Syringe" },
+          { label: "Health Camps Conducted", value: "200+", icon: "Hospital" },
+          { label: "Beneficiaries Served", value: "15,000+", icon: "Users" },
+          { label: "Child Eye Care Cases", value: "5,000+", icon: "Eye" },
         ],
         programs: [
           {
-            title: "Primary Healthcare",
+            title: "Health & Nutrition Support Program",
             description:
-              "Basic outpatient services, treatment of common illnesses, and referral to specialized care.",
+              "Providing health and nutrition support services in rural and urban areas of Barisal City Corporation.",
+          },
+          {
+            title: "Child Eye Health Care",
+            description:
+              "Child eye health care project in Barisal District with BCC, supported by Ispahani Islamia Eye Institute & Hospital, Barishal.",
           },
           {
             title: "Maternal & Child Health",
             description:
-              "Antenatal care, safe delivery services, postnatal support, and immunization programs.",
-          },
-          {
-            title: "Disease Surveillance & Prevention",
-            description:
-              "Monitoring outbreaks and conducting vaccination campaigns to prevent cholera, diphtheria, and measles.",
+              "Reducing maternal and child mortality through awareness campaigns, health education, and referral support.",
           },
         ],
         achievements: [
-          "Maintained 350+ health facilities across all camps",
-          "Delivered over 800,000 medical consultations monthly",
-          "Achieved 95% vaccination coverage for children under 5",
-        ],
-      },
-      {
-        name: "Shelter",
-        slug: "shelter",
-        description:
-          "Constructing and maintaining safe shelters for refugee families, including monsoon preparedness and site improvements.",
-        icon: "Home",
-        order: 3,
-        stats: [
-          { label: "Shelters Built", value: "270,000+", icon: "Home" },
-          { label: "Families Assisted", value: "200,000", icon: "Users" },
-          { label: "Sites Improved", value: "33", icon: "MapPin" },
-        ],
-        programs: [
-          {
-            title: "Emergency Shelter Construction",
-            description:
-              "Providing bamboo and tarpaulin shelters to newly arrived and most vulnerable families.",
-          },
-          {
-            title: "Shelter Upgrades",
-            description:
-              "Strengthening existing shelters with improved materials to withstand monsoon and cyclone seasons.",
-          },
-          {
-            title: "Site Development",
-            description:
-              "Building roads, drainage systems, stairs, and retaining walls to improve camp infrastructure.",
-          },
-        ],
-        achievements: [
-          "Constructed over 270,000 emergency shelters since 2017",
-          "Upgraded shelters for 200,000 families with weather-resistant materials",
-          "Completed major site improvement works across all 33 camps",
-        ],
-      },
-      {
-        name: "WASH",
-        slug: "wash",
-        description:
-          "Ensuring access to safe water, sanitation, and hygiene services to prevent waterborne diseases and promote health.",
-        icon: "Droplets",
-        order: 4,
-        stats: [
-          { label: "Water Points", value: "12,000+", icon: "Droplet" },
-          { label: "Latrines Built", value: "60,000+", icon: "Building" },
-          { label: "People Reached", value: "900,000+", icon: "Users" },
-        ],
-        programs: [
-          {
-            title: "Safe Water Supply",
-            description:
-              "Installing tubewells, water treatment plants, and piped water systems for reliable access to clean water.",
-          },
-          {
-            title: "Sanitation Facilities",
-            description:
-              "Constructing and maintaining latrines, bathing cubicles, and fecal sludge management systems.",
-          },
-          {
-            title: "Hygiene Promotion",
-            description:
-              "Community-led hygiene education sessions and distribution of soap and hygiene kits.",
-          },
-        ],
-        achievements: [
-          "Installed over 12,000 water points across all camps",
-          "Constructed 60,000+ latrines with proper waste management",
-          "Reached 900,000+ people with hygiene promotion campaigns",
-        ],
-      },
-      {
-        name: "Food Security",
-        slug: "food-security",
-        description:
-          "Providing food assistance through rations and e-voucher programs to ensure adequate nutrition for all refugees.",
-        icon: "Wheat",
-        order: 5,
-        stats: [
-          { label: "People Fed Monthly", value: "945,000", icon: "Users" },
-          { label: "E-Voucher Outlets", value: "1,200+", icon: "CreditCard" },
-          { label: "Monthly Ration Value", value: "$12/person", icon: "DollarSign" },
-        ],
-        programs: [
-          {
-            title: "General Food Distribution",
-            description:
-              "Monthly rice, lentils, and oil distribution to every registered refugee household.",
-          },
-          {
-            title: "E-Voucher Program",
-            description:
-              "Digital voucher system allowing refugees to purchase fresh food from local vendors, promoting choice and dignity.",
-          },
-          {
-            title: "Community Kitchens & Gardens",
-            description:
-              "Supporting small-scale vegetable gardens and shared cooking facilities to supplement rations.",
-          },
-        ],
-        achievements: [
-          "Provided monthly food assistance to 945,000+ refugees",
-          "Transitioned 80% of beneficiaries to e-voucher program for greater food choice",
-          "Established 1,200+ e-voucher retail outlets within the camps",
-        ],
-      },
-      {
-        name: "Protection",
-        slug: "protection",
-        description:
-          "Safeguarding the rights and well-being of refugees through legal support, child protection, and gender-based violence prevention.",
-        icon: "Shield",
-        order: 6,
-        stats: [
-          { label: "Protection Cases", value: "85,000+", icon: "FileText" },
-          { label: "Safe Spaces", value: "450+", icon: "ShieldCheck" },
-          { label: "GBV Support Centers", value: "120", icon: "Heart" },
-        ],
-        programs: [
-          {
-            title: "Child Protection",
-            description:
-              "Identifying and supporting unaccompanied minors, preventing child labor, and operating child-friendly spaces.",
-          },
-          {
-            title: "GBV Prevention & Response",
-            description:
-              "Running women-friendly spaces, case management, psychosocial support, and awareness campaigns.",
-          },
-          {
-            title: "Legal Aid & Documentation",
-            description:
-              "Providing legal counseling, registration support, and advocacy for refugee rights.",
-          },
-        ],
-        achievements: [
-          "Managed over 85,000 individual protection cases",
-          "Operated 450+ child-friendly and women-friendly safe spaces",
-          "Provided GBV response services through 120 dedicated support centers",
-        ],
-      },
-      {
-        name: "Livelihoods",
-        slug: "livelihoods",
-        description:
-          "Empowering refugees and host communities through skills training, income-generating activities, and self-reliance programs.",
-        icon: "Briefcase",
-        order: 7,
-        stats: [
-          { label: "People Trained", value: "65,000+", icon: "Users" },
-          { label: "Micro-Enterprises", value: "8,500", icon: "Store" },
-          { label: "Host Community Members Supported", value: "30,000+", icon: "Handshake" },
-        ],
-        programs: [
-          {
-            title: "Skills Training",
-            description:
-              "Tailoring, electronics repair, carpentry, and other vocational courses for youth and adults.",
-          },
-          {
-            title: "Cash-for-Work",
-            description:
-              "Employing refugees in camp maintenance, construction, and environmental projects for daily wages.",
-          },
-          {
-            title: "Host Community Support",
-            description:
-              "Extending livelihood programs to Bangladeshi host communities to ease social tensions and promote cohesion.",
-          },
-        ],
-        achievements: [
-          "Trained over 65,000 refugees in marketable vocational skills",
-          "Supported establishment of 8,500 micro-enterprises within the camps",
-          "Extended livelihood support to 30,000+ host community members",
+          "Conducted 200+ health camps across Barisal Division",
+          "Provided child eye health care services in Barisal District",
+          "Improved maternal and child health outcomes in target communities",
         ],
       },
       {
         name: "Nutrition",
         slug: "nutrition",
         description:
-          "Preventing and treating malnutrition among children, pregnant women, and lactating mothers through targeted nutrition programs.",
+          "Addressing malnutrition among children, pregnant women, and lactating mothers through community-based nutrition programs and policy advocacy.",
         icon: "Apple",
-        order: 8,
+        order: 2,
         stats: [
-          { label: "Nutrition Centers", value: "250+", icon: "Building" },
-          { label: "Children Screened/Month", value: "120,000", icon: "Baby" },
-          { label: "SAM Cases Treated", value: "18,000+", icon: "Activity" },
+          { label: "Communities Reached", value: "96+", icon: "MapPin" },
+          { label: "Children Screened", value: "8,000+", icon: "Baby" },
+          { label: "Mothers Supported", value: "3,000+", icon: "Heart" },
         ],
         programs: [
           {
-            title: "Community-Based Management of Acute Malnutrition",
+            title: "Community-Based Nutrition",
             description:
-              "Screening, referral, and treatment of severe and moderate acute malnutrition in children under 5.",
+              "Screening, counseling, and treatment support for malnourished children and mothers in rural villages.",
           },
           {
-            title: "Blanket Supplementary Feeding",
+            title: "National Nutrition Policy Advocacy",
             description:
-              "Providing specialized nutritious food to all children 6–59 months and pregnant/lactating women.",
+              "Identifying gaps in the National Nutrition Policy (NNP-2015) and advocating for improvements through CSA for SUN network.",
           },
           {
-            title: "Infant & Young Child Feeding Counseling",
+            title: "Infant & Young Child Feeding",
             description:
               "Promoting exclusive breastfeeding, appropriate complementary feeding, and maternal nutrition education.",
           },
         ],
         achievements: [
-          "Operated 250+ nutrition treatment and stabilization centers",
-          "Screened 120,000+ children monthly for acute malnutrition",
-          "Successfully treated over 18,000 severe acute malnutrition cases",
+          "Active member of CSA for SUN (Scaling Up Nutrition) network",
+          "Identified gaps in National Nutrition Policy (NNP-2015)",
+          "Reached thousands of children and mothers with nutrition support",
+        ],
+      },
+      {
+        name: "Education",
+        slug: "education",
+        description:
+          "Providing quality education support, empowerment programs, and learning opportunities for disadvantaged children and youth in Barisal Division.",
+        icon: "GraduationCap",
+        order: 3,
+        stats: [
+          { label: "Students Supported", value: "2,000+", icon: "Users" },
+          { label: "Schools Engaged", value: "50+", icon: "School" },
+          { label: "Scholarships Given", value: "500+", icon: "Award" },
+        ],
+        programs: [
+          {
+            title: "Education Support for Poor Students",
+            description:
+              "Providing educational support for underprivileged students funded by Depti Foundation.",
+          },
+          {
+            title: "PROKAS Education Program",
+            description:
+              "Promoting Rights, Opportunities and Knowledge for All through strengthening capacity of local organizations.",
+          },
+          {
+            title: "Youth Skills Development",
+            description:
+              "Building capacity of youth through career skill clubs and vocational training programs.",
+          },
+        ],
+        achievements: [
+          "Supported education of thousands of underprivileged students",
+          "Implemented PROKAS program funded by international partners",
+          "Member of CAMPE (Campaign for Popular Education)",
+        ],
+      },
+      {
+        name: "Water Sanitation and Hygiene (WaSH)",
+        slug: "wash",
+        description:
+          "Ensuring access to safe drinking water, sanitary latrines, and hygiene awareness in rural and coastal communities of Barisal Division.",
+        icon: "Droplets",
+        order: 4,
+        stats: [
+          { label: "Tubewells Installed", value: "300+", icon: "Droplet" },
+          { label: "Latrines Constructed", value: "1,500+", icon: "Building" },
+          { label: "People Reached", value: "20,000+", icon: "Users" },
+        ],
+        programs: [
+          {
+            title: "Bangladesh Rural Water Supply & Sanitation (BRWSSP)",
+            description:
+              "Rural water supply and sanitation project through NGO Forum for Public Health, funded by GOB-World Bank and DPHE.",
+          },
+          {
+            title: "Sustainable Hygiene Promotion",
+            description:
+              "Developing sustainable hygiene promotion programs in hotel-based and community settings.",
+          },
+          {
+            title: "Safe Water & Sanitation Access",
+            description:
+              "Constructing sources of safe drinking water and sanitary latrines in underserved areas.",
+          },
+        ],
+        achievements: [
+          "Implemented BRWSSP project with NGO Forum for Public Health",
+          "Installed hundreds of tubewells and sanitary latrines",
+          "Member of Global Water Partnership (GWP) and Bangladesh Water Partnership (BWP)",
+        ],
+      },
+      {
+        name: "Food Security & Livelihood",
+        slug: "food-security-and-livelihood",
+        description:
+          "Reducing poverty through income generating activities, micro-enterprise promotion, and agricultural livelihood support for rural communities.",
+        icon: "Wheat",
+        order: 5,
+        stats: [
+          { label: "Farmers Supported", value: "500+", icon: "Users" },
+          { label: "Micro-Enterprises", value: "200+", icon: "Store" },
+          { label: "VGD Beneficiaries", value: "5,000+", icon: "Handshake" },
+        ],
+        programs: [
+          {
+            title: "Vulnerable Group Development (VGD)",
+            description:
+              "VGD program funded by Department of Women Affairs, providing food security support to vulnerable women.",
+          },
+          {
+            title: "Micro-Enterprise Promotion",
+            description:
+              "Building small-scale entrepreneurship and providing training and monetary support for income generating activities.",
+          },
+          {
+            title: "Agricultural Livelihood Support",
+            description:
+              "Supporting farmers through AROHI Agro Business (AAB) with modern farming techniques, contract farming, and market linkages.",
+          },
+        ],
+        achievements: [
+          "Implemented VGD program through Department of Women Affairs",
+          "Established AROHI Agro Business (AAB) supporting 500+ farmers",
+          "Promoted micro-enterprises for poverty reduction",
+        ],
+      },
+      {
+        name: "Disaster Risk Reduction (DRR)",
+        slug: "drr",
+        description:
+          "Strengthening community resilience against natural disasters including floods, cyclones, tidal surges, and river erosion in the coastal belt of Barisal Division.",
+        icon: "ShieldAlert",
+        order: 6,
+        stats: [
+          { label: "Communities Prepared", value: "60+", icon: "Shield" },
+          { label: "Disaster Responses", value: "30+", icon: "AlertTriangle" },
+          { label: "Families Rehabilitated", value: "3,000+", icon: "Home" },
+        ],
+        programs: [
+          {
+            title: "Community-Based Disaster Preparedness",
+            description:
+              "Training communities on early warning systems, evacuation planning, and emergency preparedness in cyclone-prone coastal areas.",
+          },
+          {
+            title: "Post-Disaster Rehabilitation",
+            description:
+              "Rehabilitating families affected by floods, cyclones, tornados, tidal waves, and river erosion.",
+          },
+          {
+            title: "South Western Bangladesh Rural Development",
+            description:
+              "SWBRDPO project funded by JICA through LGED, focused on rural development and disaster resilience.",
+          },
+        ],
+        achievements: [
+          "Responded to 30+ natural disaster events across Barisal Division",
+          "Rehabilitated thousands of families affected by cyclones and floods",
+          "Member of District Disaster Rehabilitation (DRR) committee",
+        ],
+      },
+      {
+        name: "Climate Change",
+        slug: "climate-change",
+        description:
+          "Promoting climate justice, environmental awareness, and sustainable practices for communities in the vulnerable coastal belt of southern Bangladesh.",
+        icon: "Leaf",
+        order: 7,
+        stats: [
+          { label: "Awareness Campaigns", value: "100+", icon: "Megaphone" },
+          { label: "Communities Engaged", value: "50+", icon: "Users" },
+          { label: "Environmental Projects", value: "15+", icon: "TreePine" },
+        ],
+        programs: [
+          {
+            title: "Climate Justice Awareness",
+            description:
+              "Creating awareness about environment and climate justice among coastal communities vulnerable to climate change impacts.",
+          },
+          {
+            title: "Eco-Friendly Agriculture",
+            description:
+              "Promoting eco-friendly agro chemicals and sustainable farming practices through AROHI Agro Business.",
+          },
+          {
+            title: "Environmental Conservation",
+            description:
+              "Working with Department of Environment and Department of Forest on environmental conservation initiatives.",
+          },
+        ],
+        achievements: [
+          "Conducted 100+ climate awareness campaigns in coastal areas",
+          "Promoted eco-friendly agricultural practices among 500+ farmers",
+          "Active coordination with Department of Environment and Department of Forest",
+        ],
+      },
+      {
+        name: "Protection",
+        slug: "protection",
+        description:
+          "Safeguarding human rights, women's rights, child rights, and providing legal aid and support to vulnerable and marginalized communities.",
+        icon: "Shield",
+        order: 8,
+        stats: [
+          { label: "Legal Aid Cases", value: "1,000+", icon: "FileText" },
+          { label: "Awareness Sessions", value: "500+", icon: "Users" },
+          { label: "PWD Supported", value: "2,000+", icon: "Heart" },
+        ],
+        programs: [
+          {
+            title: "Rights of Persons with Disabilities",
+            description:
+              "Promoting rights of people with disabilities through disability-inclusive local governance and Social Welfare Department programs.",
+          },
+          {
+            title: "Legal Aid & Human Rights",
+            description:
+              "Providing legal aid education, support on human rights, women's rights, child rights, and anti-trafficking awareness.",
+          },
+          {
+            title: "Consumer Rights & Food Safety",
+            description:
+              "Program on consumer rights promotion and food safety under Food Safety Network of Bangladesh and CAB.",
+          },
+        ],
+        achievements: [
+          "Provided legal aid to 1,000+ vulnerable individuals",
+          "Operated disability development programs through Social Welfare Department",
+          "Active member of ALRD (Association for Land Reform and Development)",
+        ],
+      },
+      {
+        name: "Agriculture",
+        slug: "agriculture",
+        description:
+          "Modernizing agricultural practices, supporting farmers with technical knowledge, quality inputs, and market access through AROHI Agro Business (AAB).",
+        icon: "Sprout",
+        order: 9,
+        stats: [
+          { label: "Farmers Enlisted", value: "500+", icon: "Users" },
+          { label: "IPM/ICM Clubs", value: "20+", icon: "Leaf" },
+          { label: "Products Marketed", value: "4+", icon: "Package" },
+        ],
+        programs: [
+          {
+            title: "Contract Farming & Marketing",
+            description:
+              "Contract farming with rural farmers for mung bean, rice, handmade puffed rice, and milk production with guaranteed market access.",
+          },
+          {
+            title: "ICM/IPM Capacity Building",
+            description:
+              "Agriculture-based livelihood and capacity development for ICM/IPM club members through Department of Agriculture.",
+          },
+          {
+            title: "Agro Processing & Branding",
+            description:
+              "Processing and branding of mung dal, frozen milk, and handmade puffed rice through AROHI Agro Business (AAB).",
+          },
+        ],
+        achievements: [
+          "Established AROHI Agro Business (AAB) in 2015",
+          "Enlisted 500+ farmers in contract farming across Barisal",
+          "Successfully marketed branded mung dal, frozen milk, and puffed rice products",
         ],
       },
     ];
@@ -444,79 +480,79 @@ export async function GET() {
 
     const newsToSeed = [
       {
-        title: "New Learning Centers Open in Cox's Bazar",
-        slug: "new-learning-centers",
+        title: "AROHI Launches PROKAS Program for Community Empowerment",
+        slug: "arohi-launches-prokas-program",
         category: "Education",
         excerpt:
-          "Twelve new temporary learning centers have opened across refugee camps in Cox's Bazar, providing educational opportunities for over 3,000 Rohingya children.",
-        content: `<p>Twelve new temporary learning centers have officially opened across refugee camps in Cox's Bazar district, marking a significant milestone in efforts to provide quality education to displaced Rohingya children. The centers, built in collaboration with local and international partners, will serve over 3,000 children aged 4 to 14.</p>
-<p>Each learning center is equipped with basic educational materials, seating, and weather-resistant structures designed to withstand the monsoon season. Trained volunteer teachers from the Rohingya community will deliver lessons aligned with the Myanmar Curriculum, ensuring continuity of education for children who have been out of school since fleeing their homeland.</p>
-<p>Community leaders have welcomed the initiative, noting that education offers hope and stability for families living in uncertain conditions. Plans are already underway to expand the program with additional centers in underserved areas of the camps, with a focus on reaching adolescent girls who face the greatest barriers to education.</p>`,
+          "AROHI has launched the PROKAS program — Promoting Rights, Opportunities and Knowledge for All — funded by international partners to strengthen capacity of local organizations in Barisal.",
+        content: `<p>AROHI has officially launched the PROKAS (Promoting Rights, Opportunities and Knowledge for All through Strengthening Capacity of Local based Organisations) program in Barisal Division. The program, funded by NAGORIKATA, BLAST, GFA, and supported by Canada and Switzerland, aims to empower local communities through education, rights awareness, and organizational capacity building.</p>
+<p>The PROKAS program focuses on building the capacity of community-based organizations to deliver services effectively and advocate for the rights of marginalized populations. Training modules cover organizational management, financial accountability, program design, and community mobilization techniques.</p>
+<p>AROHI Executive Director A.T.M. Khorshed Alam stated that this initiative represents a significant step forward in AROHI's mission to bring socio-economic and cultural development to the lives of vulnerable communities in southern Bangladesh. The program will operate across multiple upazilas in Barisal Division.</p>`,
         author: "Admin",
         published: true,
         image: "",
       },
       {
-        title: "Mobile Health Clinics Reach Remote Camps",
-        slug: "mobile-health-clinics",
+        title: "Child Eye Health Care Project Expands in Barisal",
+        slug: "child-eye-health-care-expands",
         category: "Health",
         excerpt:
-          "A fleet of mobile health clinics is now providing essential medical services to refugees in hard-to-reach areas of the Cox's Bazar camps.",
-        content: `<p>A new fleet of mobile health clinics has begun operating in some of the most remote and underserved areas of the Rohingya refugee camps in Cox's Bazar. The initiative aims to bridge critical gaps in healthcare access for families living far from permanent health facilities.</p>
-<p>Each mobile unit is staffed by trained medical professionals including doctors, nurses, and community health workers who provide primary care consultations, maternal and child health services, vaccinations, and referrals for serious cases. The clinics are equipped with essential medicines and diagnostic tools, allowing them to treat common illnesses and injuries on-site.</p>
-<p>Since launching, the mobile clinics have already conducted over 5,000 consultations, identifying and treating conditions ranging from respiratory infections to malnutrition. Health workers have also used the visits to conduct hygiene promotion sessions and distribute oral rehydration salts and zinc supplements to prevent diarrheal diseases, one of the leading causes of child mortality in the camps.</p>`,
+          "AROHI's child eye health care project in Barisal District, supported by Ispahani Islamia Eye Institute, has expanded to reach more children in underserved areas.",
+        content: `<p>AROHI's child eye health care project, conducted in partnership with Ispahani Islamia Eye Institute & Hospital Barishal and Barisal City Corporation, has expanded its reach to cover additional wards and unions across the district. The project screens children for vision problems and provides referrals for treatment and corrective measures.</p>
+<p>Trained health workers conduct screenings at schools and community centers, identifying children with refractive errors, infections, and other eye conditions that can be treated early. Children requiring further care are referred to partner hospitals for specialized treatment at no cost to their families.</p>
+<p>Since its inception, the project has screened thousands of children and provided essential eye care services to those in need. Community response has been overwhelmingly positive, with parents and teachers expressing gratitude for bringing these critical services to their doorstep.</p>`,
         author: "Admin",
         published: true,
         image: "",
       },
       {
-        title: "Skills Training Program Empowers Youth",
-        slug: "skills-training-program",
-        category: "Community",
+        title: "AROHI Agro Business Empowers Farmers with Contract Farming",
+        slug: "aab-contract-farming-success",
+        category: "Agriculture",
         excerpt:
-          "A new vocational skills training program is equipping Rohingya youth with practical skills in tailoring, electronics repair, and small business management.",
-        content: `<p>Hundreds of young Rohingya refugees are gaining new skills and confidence through a recently launched vocational training program operating across several camps in Cox's Bazar. The program offers courses in tailoring, electronics repair, carpentry, and small business management, giving participants practical abilities they can use to support themselves and their families.</p>
-<p>The six-month training modules combine classroom instruction with hands-on practice, and graduates receive starter kits containing tools and materials to begin applying their skills immediately. Early cohorts have shown promising results, with several graduates already providing tailoring and repair services within their camp communities.</p>
-<p>Program coordinators emphasize that empowering youth with marketable skills is essential for building self-reliance and dignity among the refugee population. The initiative also extends to host community members, fostering positive relationships and shared economic opportunities between refugees and their Bangladeshi neighbors.</p>`,
+          "AROHI Agro Business (AAB) has successfully enlisted over 500 farmers in contract farming for mung bean, rice, and milk production across Barisal District.",
+        content: `<p>AROHI Agro Business (AAB), the social enterprise arm of AROHI established in 2015, has reached a milestone of enlisting over 500 farmers in its contract farming program across Barisal District. The program provides farmers with technical training on modern cultivation techniques, quality inputs including seeds, fertilizers, and eco-friendly pesticides, and guaranteed market access for their produce.</p>
+<p>AAB has been particularly successful in mung bean cultivation, where farmers receive training on post-harvest management and can sell their produce directly to AAB at fair prices, eliminating middlemen and ensuring better returns. The organization also processes and brands mung dal, frozen milk, and traditional handmade puffed rice under its own label.</p>
+<p>The program has created a sustainable relationship between AROHI and farming communities, where farmers benefit from guaranteed market access, technical knowledge, and quality inputs, while AAB ensures a steady supply of fresh, safe, and high-quality agricultural products for consumers in Barisal and beyond.</p>`,
         author: "Admin",
         published: true,
         image: "",
       },
       {
-        title: "Child Protection Initiatives Expand",
-        slug: "child-protection-initiatives",
+        title: "Disability Rights Program Strengthens Inclusive Governance",
+        slug: "disability-rights-program",
         category: "Protection",
         excerpt:
-          "Expanded child protection programs are strengthening safeguards for vulnerable Rohingya children through new safe spaces, case management, and community awareness campaigns.",
-        content: `<p>Child protection services in the Rohingya refugee camps have been significantly expanded with the opening of 50 new child-friendly spaces and the deployment of additional trained case workers. The initiative responds to growing concerns about the vulnerabilities faced by children in the densely populated camps, including risks of trafficking, child labor, and early marriage.</p>
-<p>The child-friendly spaces provide safe environments where children can play, learn, and receive psychosocial support from trained facilitators. Activities include structured recreational programs, art therapy, and life skills sessions designed to help children process trauma and build resilience. Each space serves approximately 100 children per day on a rotating schedule.</p>
-<p>Alongside the safe spaces, community awareness campaigns are being conducted to educate parents and caregivers about child protection risks and the importance of reporting concerns. Trained community volunteers go door-to-door, sharing information about available services and helping to identify children who may need specialized support, including unaccompanied minors and children with disabilities.</p>`,
+          "AROHI's program for promoting rights of persons with disabilities is making strides in disability-inclusive local governance across Barisal Division.",
+        content: `<p>AROHI's ongoing program for promoting the rights of Persons with Disabilities (PWD) through disability-inclusive local governance has been making significant progress in Barisal Division. Working in close collaboration with the Social Welfare Department, the program focuses on mainstreaming disability inclusion into local government planning and service delivery.</p>
+<p>The program includes formation of disable self-help groups, community-based rehabilitation services, and advocacy for the rights of persons with disabilities at union, upazila, and district levels. AROHI has established Disability Development Committees at multiple levels to ensure sustained representation and participation of PWD in decision-making processes.</p>
+<p>Through this initiative, hundreds of persons with disabilities have received assistive devices, skills training, and support for micro-enterprise development. The program also conducts regular awareness sessions to reduce stigma and promote acceptance of disability in rural communities.</p>`,
         author: "Admin",
         published: true,
         image: "",
       },
       {
-        title: "Mental Health Support Programs Launch",
-        slug: "mental-health-support",
-        category: "Health",
+        title: "Water Supply and Sanitation Project Benefits Rural Communities",
+        slug: "brwssp-water-sanitation-project",
+        category: "WaSH",
         excerpt:
-          "New mental health and psychosocial support programs are addressing the widespread trauma experienced by Rohingya refugees through counseling and community-based interventions.",
-        content: `<p>Recognizing the deep psychological toll of displacement and violence, humanitarian organizations have launched comprehensive mental health and psychosocial support (MHPSS) programs across the Rohingya refugee camps. The initiative includes individual counseling, group therapy sessions, and community-based support activities designed to address trauma, anxiety, and depression among the refugee population.</p>
-<p>Trained counselors, many of whom are Rohingya community members, provide culturally sensitive support in dedicated counseling centers within the camps. Group sessions focus on topics such as coping strategies, stress management, and rebuilding social connections. Special programs have been developed for women who have experienced gender-based violence and for children showing signs of severe emotional distress.</p>
-<p>Early data from the program shows encouraging engagement, with over 2,000 individuals accessing services in the first two months. Program leaders note that reducing stigma around mental health remains a priority, and community awareness sessions are being held regularly to encourage people to seek support. The goal is to integrate mental health services into all aspects of the humanitarian response.</p>`,
+          "The Bangladesh Rural Water Supply and Sanitation Project (BRWSSP) implemented by AROHI through NGO Forum has improved water access for thousands of families.",
+        content: `<p>AROHI's implementation of the Bangladesh Rural Water Supply and Sanitation Project (BRWSSP) through NGO Forum for Public Health, funded by the Government of Bangladesh and the World Bank through the Department of Public Health Engineering (DPHE), has successfully improved access to safe drinking water and sanitation for thousands of families across Barisal Division.</p>
+<p>The project has installed hundreds of tubewells and constructed sanitary latrines in remote and underserved areas, including char (river island) communities that previously had no access to safe water sources. Community members have been trained in water point maintenance and hygiene promotion to ensure sustainability of the infrastructure.</p>
+<p>Hygiene promotion activities accompany the hardware interventions, with trained community volunteers conducting door-to-door sessions on handwashing, safe water storage, and sanitary practices. The combination of infrastructure development and behavior change communication has led to measurable improvements in health outcomes in target communities.</p>`,
         author: "Admin",
         published: true,
         image: "",
       },
       {
-        title: "Digital Literacy Classes Begin",
-        slug: "digital-literacy-classes",
-        category: "Education",
+        title: "AROHI Celebrates 23 Years of Community Service",
+        slug: "arohi-23-years-celebration",
+        category: "Community",
         excerpt:
-          "Rohingya youth are learning essential digital skills through a new program that introduces basic computer literacy, internet safety, and digital communication tools.",
-        content: `<p>A pioneering digital literacy program has begun in several learning centers across the refugee camps, introducing Rohingya youth to fundamental computer skills and digital tools. The program uses donated tablets and laptops to teach participants basic computer operation, word processing, internet navigation, and digital communication — skills increasingly essential in the modern world.</p>
-<p>Classes are designed for youth aged 15 to 24 and are conducted in small groups to ensure each participant receives adequate hands-on practice time. The curriculum also covers internet safety, responsible online behavior, and how to identify misinformation — critical knowledge for a community that has been targeted by harmful online content in the past.</p>
-<p>Instructors report high levels of enthusiasm and rapid learning among participants, many of whom are using computers for the first time. The program aims to not only build technical skills but also to open pathways for online learning, remote work opportunities, and digital engagement that could support the community's long-term development and self-reliance.</p>`,
+          "AROHI marks 23 years of dedicated service to disadvantaged communities in Barisal Division, reflecting on achievements and future goals.",
+        content: `<p>AROHI — Association of Rural Opportunities and Human Initiatives — celebrated its 23rd anniversary, marking over two decades of dedicated service to disadvantaged and marginalized communities across Barisal Division in southern Bangladesh. Since its inception in 2002, AROHI has grown from a small local initiative to a recognized regional NGO working across multiple sectors.</p>
+<p>Over the years, AROHI has implemented programs in health, nutrition, education, water sanitation and hygiene, food security and livelihood, disaster risk reduction, climate change, protection, and agriculture. The organization operates from its head office in Barisal city with field offices in Mehendiganj, BCC, Kalapara (Patuakhali), and Bhola Sadar.</p>
+<p>Looking ahead, AROHI aims to expand its programs to reach more vulnerable communities, strengthen its partnerships with government and international agencies, and continue its mission of empowering disadvantaged people through sustainable development. The organization's commitment to accountability, transparency, and respect for vulnerable groups remains at the core of its work.</p>`,
         author: "Admin",
         published: true,
         image: "",
@@ -536,63 +572,63 @@ export async function GET() {
 
     const resourcesToSeed = [
       {
-        title: "Joint Response Plan 2024",
+        title: "AROHI Annual Report 2024",
         description:
-          "Comprehensive inter-agency response plan outlining strategic objectives, funding requirements, and coordination mechanisms for the Rohingya humanitarian response.",
+          "Comprehensive annual report covering AROHI's programs, achievements, financial statements, and impact across all sectors in Barisal Division.",
         fileUrl: "#",
         fileType: "PDF",
         category: "Reports",
-        fileSize: "2.4 MB",
-        published: true,
-      },
-      {
-        title: "Refugee Population Statistics Q4",
-        description:
-          "Quarterly statistical report on refugee population figures, demographics, new arrivals, and camp-level breakdowns for the fourth quarter.",
-        fileUrl: "#",
-        fileType: "XLSX",
-        category: "Data Sheets",
-        fileSize: "1.1 MB",
-        published: true,
-      },
-      {
-        title: "Education Sector Guidelines",
-        description:
-          "Operational guidelines for education sector partners covering curriculum standards, learning center requirements, teacher training, and monitoring frameworks.",
-        fileUrl: "#",
-        fileType: "PDF",
-        category: "Guidelines",
         fileSize: "3.2 MB",
         published: true,
       },
       {
-        title: "Health Assessment Report",
+        title: "AROHI Organization Profile",
         description:
-          "Detailed assessment of health sector performance, disease surveillance data, facility coverage, and recommendations for improving healthcare delivery in the camps.",
-        fileUrl: "#",
-        fileType: "PDF",
-        category: "Reports",
-        fileSize: "4.5 MB",
-        published: true,
-      },
-      {
-        title: "WASH Infrastructure Data",
-        description:
-          "Comprehensive dataset on water, sanitation, and hygiene infrastructure including water point locations, latrine coverage ratios, and water quality testing results.",
-        fileUrl: "#",
-        fileType: "XLSX",
-        category: "Data Sheets",
-        fileSize: "890 KB",
-        published: true,
-      },
-      {
-        title: "Protection Framework 2024",
-        description:
-          "Strategic framework for protection sector interventions including child protection, GBV prevention and response, legal aid, and community-based protection mechanisms.",
+          "Detailed profile of AROHI including background, vision, mission, governance structure, working areas, and partnership information.",
         fileUrl: "#",
         fileType: "PDF",
         category: "Publications",
         fileSize: "1.8 MB",
+        published: true,
+      },
+      {
+        title: "AROHI Agro Business (AAB) Profile",
+        description:
+          "Profile of AROHI Agro Business covering contract farming, mung bean processing, frozen milk, and agricultural marketing operations in Barisal.",
+        fileUrl: "#",
+        fileType: "PDF",
+        category: "Publications",
+        fileSize: "2.1 MB",
+        published: true,
+      },
+      {
+        title: "WaSH Program Guidelines",
+        description:
+          "Operational guidelines for water supply, sanitation, and hygiene programs implemented under BRWSSP and other WaSH initiatives in Barisal Division.",
+        fileUrl: "#",
+        fileType: "PDF",
+        category: "Guidelines",
+        fileSize: "1.5 MB",
+        published: true,
+      },
+      {
+        title: "Disability Inclusion Framework",
+        description:
+          "Framework document for promoting rights of persons with disabilities through disability-inclusive local governance and community-based rehabilitation.",
+        fileUrl: "#",
+        fileType: "PDF",
+        category: "Guidelines",
+        fileSize: "980 KB",
+        published: true,
+      },
+      {
+        title: "Nutrition Program Data Sheet",
+        description:
+          "Data sheet covering nutrition screening results, malnutrition rates, and intervention outcomes across AROHI's nutrition programs in Barisal Division.",
+        fileUrl: "#",
+        fileType: "XLSX",
+        category: "Data Sheets",
+        fileSize: "750 KB",
         published: true,
       },
     ];
@@ -610,72 +646,72 @@ export async function GET() {
 
     const galleryToSeed = [
       {
-        title: "Aerial View of Kutupalong Camp",
+        title: "AROHI Community Health Camp",
         caption:
-          "Sprawling view of the world's largest refugee settlement in Kutupalong, Cox's Bazar, home to hundreds of thousands of Rohingya refugees.",
+          "AROHI health workers conduct a community health camp in a rural village of Barisal, providing free health screenings and consultations to families.",
         imageUrl: "/images/placeholder.jpg",
-        category: "Camps",
+        category: "Health",
         featured: true,
         order: 1,
       },
       {
-        title: "Children Learning in Temporary Classroom",
+        title: "Education Support for Underprivileged Students",
         caption:
-          "Rohingya children attend lessons in a bamboo-and-tarpaulin temporary learning center, eager to continue their education despite displacement.",
+          "Students receiving educational materials and support through AROHI's education empowerment program in Barisal Division.",
         imageUrl: "/images/placeholder.jpg",
         category: "Education",
         featured: true,
         order: 2,
       },
       {
-        title: "Health Worker Conducting Vaccination",
+        title: "AROHI Agro Business Farmer Training",
         caption:
-          "A community health worker administers vaccines to children during a routine immunization campaign in the refugee camps.",
+          "Farmers in Barisal participate in a training session on modern cultivation techniques organized by AROHI Agro Business (AAB).",
         imageUrl: "/images/placeholder.jpg",
-        category: "Health",
-        featured: false,
+        category: "Agriculture",
+        featured: true,
         order: 3,
       },
       {
-        title: "Women's Tailoring Workshop",
+        title: "Tubewell Installation in Remote Area",
         caption:
-          "Rohingya women participate in a tailoring skills training session, learning to sew garments as part of a livelihood empowerment program.",
+          "A newly installed tubewell providing safe drinking water to a char (river island) community through AROHI's BRWSSP program.",
         imageUrl: "/images/placeholder.jpg",
-        category: "Community",
-        featured: true,
+        category: "WaSH",
+        featured: false,
         order: 4,
       },
       {
-        title: "Water Collection Point at Dawn",
+        title: "Disability Rights Awareness Session",
         caption:
-          "Refugees queue at a solar-powered water collection point early in the morning, one of thousands installed across the camps to ensure safe drinking water access.",
+          "Community members gather for a disability rights awareness session organized by AROHI to promote inclusion and acceptance of persons with disabilities.",
         imageUrl: "/images/placeholder.jpg",
-        category: "Camps",
-        featured: false,
+        category: "Protection",
+        featured: true,
         order: 5,
       },
       {
-        title: "Youth Reading Circle",
+        title: "Disaster Preparedness Training",
         caption:
-          "Adolescent Rohingya youth gather for a reading circle in a community library space, sharing stories and practicing literacy skills together.",
+          "Coastal community members participate in a disaster preparedness training conducted by AROHI to strengthen resilience against cyclones and floods.",
         imageUrl: "/images/placeholder.jpg",
-        category: "Education",
+        category: "DRR",
         featured: false,
         order: 6,
       },
       {
-        title: "Mobile Clinic in Action",
+        title: "Mung Bean Harvest with Contract Farmers",
         caption:
-          "A mobile health clinic team sets up in a remote section of the camp, bringing essential medical services to families who cannot easily reach permanent health facilities.",
+          "Contract farmers in Barisal harvest mung beans as part of AROHI Agro Business's sustainable agriculture and market linkage program.",
         imageUrl: "/images/placeholder.jpg",
-        category: "Health",
-        featured: true,
+        category: "Agriculture",
+        featured: false,
         order: 7,
       },
       {
-        title: "Community Gathering for Awareness Session",
+        title: "Women's Empowerment Workshop",
         caption:
-          "Community members gather under a large canopy for a hygiene awareness and disaster preparedness session led by trained volunteers.",
+          "Vulnerable women participate in a capacity building and leadership workshop organized by AROHI to promote gender equality and women's empowerment.",
         imageUrl: "/images/placeholder.jpg",
         category: "Community",
         featured: false,
@@ -696,30 +732,30 @@ export async function GET() {
 
     const teamMembersToSeed = [
       {
-        name: "Dr. Sarah Ahmed",
-        role: "Executive Director",
-        bio: "Dr. Sarah Ahmed brings over 15 years of experience in humanitarian leadership and international development. She has worked with major UN agencies and international NGOs across South and Southeast Asia, specializing in refugee protection and durable solutions. Under her leadership, the organization has expanded its programs to reach over 500,000 beneficiaries across all 33 refugee camps in Cox's Bazar.",
+        name: "A.T.M. Khorshed Alam",
+        role: "Executive Director & Founder Member Secretary",
+        bio: "A.T.M. Khorshed Alam is the founder and Executive Director of AROHI, leading the organization since its inception in 2002. A dedicated social worker, he also serves as Secretary of NATAB and Vice President of FNB-Barishal. Under his leadership, AROHI has grown from a small local initiative to a recognized regional NGO working across multiple sectors in Barisal Division, implementing 17+ programs with national and international partners.",
         photo: "",
         order: 1,
       },
       {
-        name: "Mohammad Rahman",
-        role: "Program Manager",
-        bio: "Mohammad Rahman oversees the design, implementation, and monitoring of all field programs across education, health, and livelihoods sectors. With a background in public health and community development, he has spent over a decade working directly with displaced communities in Bangladesh. His hands-on approach and deep understanding of local dynamics have been instrumental in ensuring programs are effective and culturally appropriate.",
+        name: "Md. Shabuddin",
+        role: "Chairman",
+        bio: "Md. Shabuddin serves as the Chairman of AROHI's governing body. A respected social worker and teacher, he provides strategic guidance and oversight to ensure the organization stays true to its mission of serving disadvantaged communities. His leadership and community standing have been instrumental in building trust and credibility for AROHI across Barisal Division.",
         photo: "",
         order: 2,
       },
       {
-        name: "Fatima Begum",
-        role: "Field Coordinator",
-        bio: "Fatima Begum manages day-to-day operations in the refugee camps, coordinating with field teams, community leaders, and partner organizations to deliver services efficiently. Born and raised in Cox's Bazar, she brings invaluable local knowledge and strong community relationships to the role. Her dedication to the Rohingya cause and her ability to navigate complex field conditions make her an essential part of the team.",
+        name: "Gopal Sarker",
+        role: "Vice-Chairman",
+        bio: "Gopal Sarker serves as Vice-Chairman of AROHI's governing body. A journalist by profession, he brings valuable media expertise and community connections to the organization. His role in advocacy and public communication has helped raise awareness about AROHI's programs and the needs of vulnerable communities in southern Bangladesh.",
         photo: "",
         order: 3,
       },
       {
-        name: "James Wilson",
-        role: "Communications Director",
-        bio: "James Wilson leads the organization's communications, advocacy, and fundraising efforts, ensuring that the stories and needs of Rohingya refugees reach global audiences. With a background in journalism and nonprofit communications, he has produced award-winning reports and multimedia content from humanitarian crises around the world. He is passionate about using storytelling to drive awareness, empathy, and meaningful action.",
+        name: "Md. Manirul Islam",
+        role: "Treasurer",
+        bio: "Md. Manirul Islam serves as Treasurer of AROHI, overseeing the organization's financial management and accountability. A businessman with strong financial acumen, he ensures that AROHI maintains transparent and responsible management of funds from donors, government agencies, and partner organizations.",
         photo: "",
         order: 4,
       },
@@ -732,6 +768,97 @@ export async function GET() {
       results.teamMembers = `Created ${teamMembersToSeed.length} team members`;
     } else {
       results.teamMembers = `${existingTeamCount} team members already exist — skipped`;
+    }
+
+    // ─── 8. Seed About Content ──────────────────────────────────────────
+
+    let existingAbout = await AboutContent.findOne();
+
+    // Migrate: if missionBody is empty, delete and re-seed
+    if (existingAbout && !existingAbout.missionBody) {
+      await AboutContent.deleteOne({ _id: existingAbout._id });
+      existingAbout = null;
+    }
+
+    if (!existingAbout) {
+      await AboutContent.create({
+        heroTitle: "About AROHI",
+        heroSubtitle:
+          "Empowering disadvantaged communities in Barisal Division through sustainable socio-economic development since 2002.",
+        missionLabel: "Our Mission",
+        missionTitle: "Working for the Disadvantaged",
+        missionBody: "<p>AROHI — Association of Rural Opportunities and Human Initiatives — was established in 2002 to bring socio-economic and cultural development to the lives of minority women, children, and persons with disabilities in southern Bangladesh through community empowerment and skill building.</p><p>Operating from our head office in Barisal with field offices across Mehendiganj, Barisal City Corporation, Kalapara (Patuakhali), and Bhola Sadar, we work with 84+ staff members across 3 districts, 6 upazilas, and over 300 villages to deliver programs in health, nutrition, education, WaSH, food security, DRR, climate change, protection, and agriculture.</p><p>Our vision is to promote the socio-economic conditions of Persons with Disabilities (PWD), indigenous and minority groups, women, children, youth, and landless people through forming village development committees and strengthening their knowledge and skills for self-reliance.</p>",
+        missionImage: "",
+        timelineLabel: "Our Journey",
+        timelineTitle: "History of AROHI",
+        timelineSubtitle:
+          "Over two decades of dedicated service to disadvantaged communities in Barisal Division.",
+        timeline: [
+          {
+            year: "2002",
+            title: "AROHI Founded",
+            description:
+              "AROHI was established in Barisal as a local level non-government, non-political, nonprofit voluntary organization by likeminded social workers committed to community development.",
+          },
+          {
+            year: "2014",
+            title: "Registered with Women Affairs",
+            description:
+              "AROHI expanded its scope by registering with the Department of Women Affairs, strengthening its focus on women's empowerment and gender equality programs.",
+          },
+          {
+            year: "2015",
+            title: "AROHI Agro Business (AAB) Launched",
+            description:
+              "Established AROHI Agro Business to support rural farmers through contract farming, modern agriculture techniques, and market linkages in Barisal District.",
+          },
+          {
+            year: "2017",
+            title: "Youth Development Registration",
+            description:
+              "Registered with the Department of Youth Development, expanding programs for youth capacity building and career skills development.",
+          },
+          {
+            year: "2025",
+            title: "NGOAB Registration & Expanding Impact",
+            description:
+              "Received NGOAB registration and now operates 17+ programs across health, nutrition, education, WaSH, food security, DRR, climate change, protection, and agriculture.",
+          },
+        ],
+        valuesLabel: "What Drives Us",
+        valuesTitle: "Our Values",
+        valuesSubtitle:
+          "These core principles guide our work and define who we are as an organization.",
+        values: [
+          {
+            icon: "HiHeart",
+            title: "Compassion",
+            description:
+              "We place the dignity and well-being of every disadvantaged person at the center of everything we do, responding with empathy and care.",
+          },
+          {
+            icon: "HiShieldCheck",
+            title: "Accountability",
+            description:
+              "We uphold the highest standards of transparency, accountability, and ethical conduct in all our operations and partnerships.",
+          },
+          {
+            icon: "HiLightBulb",
+            title: "Commitment",
+            description:
+              "We are committed to the underprivileged and marginalized people of the community for bringing positive changes to their lifestyle.",
+          },
+          {
+            icon: "HiUserGroup",
+            title: "Respect",
+            description:
+              "We respect the religious sentiments, culture, heritage, and existing values of the communities we serve, particularly persons with disabilities and vulnerable groups.",
+          },
+        ],
+      });
+      results.aboutContent = "Created about page content";
+    } else {
+      results.aboutContent = "About content already exists — skipped";
     }
 
     // ─── Done ───────────────────────────────────────────────────────────

@@ -144,8 +144,8 @@ export default function ResourcesPage() {
             Resources & Reports
           </h1>
           <p className="text-lg text-white/80 max-w-2xl">
-            Access key documents, data sheets, and publications from the
-            Rohingya humanitarian response. Download reports to stay informed on
+            Access key documents, data sheets, and publications from
+            AROHI&apos;s development programs. Download reports to stay informed on
             progress and priorities.
           </p>
         </div>

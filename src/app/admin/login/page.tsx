@@ -162,7 +162,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-dark-lighter">
-          Rohingya in Bangladesh &mdash; Content Management System
+          AROHI &mdash; Content Management System
         </p>
       </div>
     </div>

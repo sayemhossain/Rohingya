@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useNewsList } from "@/hooks/use-api";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,6 +12,11 @@ const gradientMap: Record<string, string> = {
   Protection: "from-sky-600 to-cyan-500",
   Community: "from-emerald-600 to-green-500",
   General: "from-brand to-brand-light",
+  Agriculture: "from-lime-600 to-green-500",
+  WaSH: "from-blue-500 to-cyan-500",
+  Nutrition: "from-red-500 to-rose-500",
+  DRR: "from-amber-500 to-orange-500",
+  "Climate Change": "from-yellow-500 to-amber-500",
 };
 
 function formatDate(dateStr: string) {
@@ -24,6 +30,7 @@ function formatDate(dateStr: string) {
 export default function NewsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: articles = [], isLoading } = useNewsList() as { data: Record<string, any>[]; isLoading: boolean };
+  const [activeCategory, setActiveCategory] = useState("All");
 
   if (isLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -38,6 +45,10 @@ export default function NewsPage() {
   const categorySet = new Set<string>(articles.map((a) => a.category));
   const categories = ["All", ...Array.from(categorySet)];
 
+  const filtered = activeCategory === "All"
+    ? articles
+    : articles.filter((a) => a.category === activeCategory);
+
   return (
     <>
       {/* Hero Banner */}
@@ -48,8 +59,8 @@ export default function NewsPage() {
             News & Stories
           </h1>
           <p className="text-lg text-white/80 max-w-2xl mb-6">
-            Stay informed about the latest developments, humanitarian efforts,
-            and inspiring stories from the Rohingya refugee response.
+            Stay informed about the latest developments, programs,
+            and inspiring stories from AROHI&apos;s community development work.
           </p>
           {/* Breadcrumb */}
           <nav className="flex items-center text-sm text-white/60">
@@ -69,8 +80,9 @@ export default function NewsPage() {
             {categories.map((cat) => (
               <button
                 key={cat}
+                onClick={() => setActiveCategory(cat)}
                 className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-medium transition-colors ${
-                  cat === "All"
+                  cat === activeCategory
                     ? "bg-brand text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
@@ -85,15 +97,17 @@ export default function NewsPage() {
       {/* Articles Grid */}
       <section className="section-padding bg-gray-50">
         <div className="container-custom">
-          {articles.length === 0 ? (
+          {filtered.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-gray-500 text-lg">
-                No articles published yet. Check back soon for updates.
+                {activeCategory === "All"
+                  ? "No articles published yet. Check back soon for updates."
+                  : `No articles found in "${activeCategory}" category.`}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {articles.map((article) => {
+              {filtered.map((article) => {
                 const gradient =
                   gradientMap[article.category] || gradientMap.General;
                 return (

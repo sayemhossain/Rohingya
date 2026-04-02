@@ -8,8 +8,8 @@ export default function GetInvolvedCTA() {
           Make a Difference Today
         </h2>
         <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto opacity-90">
-          Your support can change lives. Join us in providing hope and essential
-          services to Rohingya refugees.
+          Your support can change lives. Join us in empowering disadvantaged
+          communities across Barisal Division.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link

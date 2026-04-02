@@ -55,8 +55,8 @@ export default function GalleryPage() {
             Photo Gallery
           </h1>
           <p className="text-lg text-white/80 max-w-2xl">
-            Visual stories from the Rohingya humanitarian response — documenting
-            resilience, recovery, and the daily lives of refugees in Bangladesh.
+            Visual stories from AROHI&apos;s programs — documenting
+            community empowerment, development, and impact across Barisal Division.
           </p>
         </div>
       </section>

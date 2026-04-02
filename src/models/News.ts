@@ -6,7 +6,7 @@ export interface INews extends Document {
   content: string;
   excerpt: string;
   image: string;
-  category: 'Education' | 'Health' | 'Protection' | 'Community' | 'General';
+  category: 'Education' | 'Health' | 'Protection' | 'Community' | 'General' | 'Agriculture' | 'WaSH' | 'Nutrition' | 'DRR' | 'Climate Change';
   author: string;
   published: boolean;
   createdAt: Date;
@@ -40,7 +40,7 @@ const NewsSchema = new Schema<INews>(
     },
     category: {
       type: String,
-      enum: ['Education', 'Health', 'Protection', 'Community', 'General'],
+      enum: ['Education', 'Health', 'Protection', 'Community', 'General', 'Agriculture', 'WaSH', 'Nutrition', 'DRR', 'Climate Change'],
       default: 'General',
     },
     author: {

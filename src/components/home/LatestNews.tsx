@@ -39,8 +39,8 @@ export default function LatestNews({ news }: { news?: NewsItem[] }) {
         <div className="text-center mb-12">
           <h2 className="section-title">Latest News & Updates</h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4 text-lg">
-            Stay informed about the latest developments, humanitarian efforts,
-            and stories from the Rohingya refugee response.
+            Stay informed about the latest developments, programs,
+            and stories from AROHI&apos;s community development work.
           </p>
         </div>
 

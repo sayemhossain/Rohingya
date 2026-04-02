@@ -11,6 +11,7 @@ import {
   HiChevronUp,
   HiPhotograph,
 } from "react-icons/hi";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -427,13 +428,9 @@ export default function AdminSectorsPage() {
             {/* Long Description */}
             <div className="sm:col-span-2">
               <label className={labelClass}>Long Description</label>
-              <textarea
-                className={inputClass}
-                rows={4}
+              <RichTextEditor
                 value={form.longDescription}
-                onChange={(e) =>
-                  updateField("longDescription", e.target.value)
-                }
+                onChange={(val) => updateField("longDescription", val)}
                 placeholder="Detailed description for the sector detail page..."
               />
             </div>

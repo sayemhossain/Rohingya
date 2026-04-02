@@ -21,22 +21,22 @@ interface NavItem {
 const defaultNavLinks: NavItem[] = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/crisis-overview", label: "Crisis Overview" },
   {
     href: "/sectors",
     label: "Sectors",
     children: [
-      { label: "Education", href: "/sectors/education" },
       { label: "Health", href: "/sectors/health" },
-      { label: "Shelter", href: "/sectors/shelter" },
-      { label: "WASH", href: "/sectors/wash" },
-      { label: "Food Security", href: "/sectors/food-security" },
-      { label: "Protection", href: "/sectors/protection" },
-      { label: "Livelihoods", href: "/sectors/livelihoods" },
       { label: "Nutrition", href: "/sectors/nutrition" },
+      { label: "Education", href: "/sectors/education" },
+      { label: "WaSH", href: "/sectors/wash" },
+      { label: "Food Security & Livelihood", href: "/sectors/food-security-and-livelihood" },
+      { label: "DRR", href: "/sectors/drr" },
+      { label: "Climate Change", href: "/sectors/climate-change" },
+      { label: "Protection", href: "/sectors/protection" },
+      { label: "Agriculture", href: "/sectors/agriculture" },
     ],
   },
-  { href: "/news", label: "News" },
+  { href: "/news", label: "News & Stories" },
   { href: "/resources", label: "Resources" },
   { href: "/gallery", label: "Gallery" },
   { href: "/get-involved", label: "Get Involved" },
@@ -121,10 +121,10 @@ const Navbar = ({ navLinks }: NavbarProps) => {
         {/* Logo */}
         <Link href="/" className="flex flex-col leading-tight">
           <span className="font-heading text-2xl font-bold tracking-tight text-brand lg:text-3xl">
-            ROHINGYA
+            AROHI
           </span>
           <span className="font-body text-[10px] uppercase tracking-[0.2em] text-gray-500">
-            Humanitarian Response
+            Rural Opportunities &amp; Human Initiatives
           </span>
         </Link>
 

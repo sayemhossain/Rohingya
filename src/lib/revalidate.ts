@@ -34,6 +34,11 @@ export function revalidateTeam() {
   revalidatePath("/about");
 }
 
+export function revalidateAbout() {
+  revalidatePath("/about");
+  revalidatePath("/");
+}
+
 export function revalidateSettings() {
   revalidatePath("/");
   revalidatePath("/about");

@@ -9,6 +9,7 @@ import {
   HiDocumentText,
   HiDownload,
 } from "react-icons/hi";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface Resource {
   _id: string;
@@ -216,13 +217,9 @@ export default function AdminResourcesPage() {
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Description
                 </label>
-                <textarea
+                <RichTextEditor
                   value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  onChange={(val) => setForm({ ...form, description: val })}
                   placeholder="Brief description of this resource"
                 />
               </div>

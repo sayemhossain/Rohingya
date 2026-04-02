@@ -27,6 +27,11 @@ const categoryColors: Record<string, string> = {
   Protection: "bg-purple-100 text-purple-700",
   Community: "bg-orange-100 text-orange-700",
   General: "bg-gray-100 text-gray-700",
+  Agriculture: "bg-lime-100 text-lime-700",
+  WaSH: "bg-cyan-100 text-cyan-700",
+  Nutrition: "bg-red-100 text-red-700",
+  DRR: "bg-amber-100 text-amber-700",
+  "Climate Change": "bg-emerald-100 text-emerald-700",
 };
 
 export default function AdminNewsPage() {
@@ -39,7 +44,7 @@ export default function AdminNewsPage() {
     try {
       const res = await fetch("/api/news?limit=100");
       const data = await res.json();
-      setArticles(data.articles ?? data ?? []);
+      setArticles(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.articles) ? data.articles : []);
     } catch (err) {
       console.error("Failed to fetch articles:", err);
     } finally {

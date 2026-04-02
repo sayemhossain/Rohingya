@@ -1,6 +1,6 @@
 "use client";
 
-import { useHomepage } from "@/hooks/use-api";
+import { useHomepage, useAbout } from "@/hooks/use-api";
 import HeroSlider from "@/components/home/HeroSlider";
 import CrisisOverview from "@/components/home/CrisisOverview";
 import StatsCounter from "@/components/home/StatsCounter";
@@ -80,13 +80,19 @@ function HomeLoading() {
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, isLoading } = useHomepage() as { data: Record<string, any> | undefined; isLoading: boolean };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: about } = useAbout() as { data: Record<string, any> | undefined };
 
   if (isLoading) return <HomeLoading />;
 
   return (
     <>
       <HeroSlider slides={data?.heroSlides} />
-      <CrisisOverview />
+      <CrisisOverview
+        missionTitle={about?.missionTitle}
+        missionBody={about?.missionBody}
+        missionImage={about?.missionImage}
+      />
       <StatsCounter stats={data?.stats} />
       <SectorsGrid sectors={data?.sectors} />
       <LatestNews news={data?.news} />

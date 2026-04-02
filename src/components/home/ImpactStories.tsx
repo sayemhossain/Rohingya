@@ -56,7 +56,7 @@ export default function ImpactStories() {
           <h2 className="section-title">Impact Stories</h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4 text-lg">
             Real voices from the community — stories of resilience, hope, and
-            the difference humanitarian support makes every day.
+            the difference community development support makes every day.
           </p>
         </div>
 

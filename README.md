@@ -1,6 +1,6 @@
-# Rohingya in Bangladesh
+# AROHI — Association of Rural Opportunities and Human Initiatives
 
-A humanitarian response website for the Rohingya refugee crisis in Bangladesh. Built with Next.js 14, featuring a public-facing site and a full admin dashboard for content management.
+Website for AROHI, a non-government, non-political, nonprofit voluntary organization working for socio-economic development of disadvantaged people in Barisal Division, Bangladesh since 2002. Built with Next.js 14, featuring a public-facing site and a full admin dashboard for content management.
 
 ## Tech Stack
 
@@ -46,7 +46,7 @@ A humanitarian response website for the Rohingya refugee crisis in Bangladesh. B
 
 ```bash
 git clone <repo-url>
-cd rohingya-in-bangladesh
+cd arohi-website
 npm install
 ```
 
@@ -56,7 +56,7 @@ Create a `.env.local` file in the root:
 
 ```env
 # MongoDB
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/rohingya-db?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/arohi-db?retryWrites=true&w=majority
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=your-cloud-name

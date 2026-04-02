@@ -17,9 +17,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Rohingya in Bangladesh — Humanitarian Response",
+  title: "AROHI — Association of Rural Opportunities and Human Initiatives",
   description:
-    "Supporting Rohingya refugees in Bangladesh through education, healthcare, shelter, and sustainable solutions.",
+    "AROHI is a non-government, non-political, nonprofit voluntary organization working for socio-economic development of disadvantaged people in Barisal Division, Bangladesh since 2002.",
 };
 
 export default function RootLayout({

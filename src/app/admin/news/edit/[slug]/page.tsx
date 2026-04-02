@@ -5,8 +5,9 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { HiArrowLeft, HiUpload } from "react-icons/hi";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
-const CATEGORIES = ["Education", "Health", "Protection", "Community", "General"];
+const CATEGORIES = ["Education", "Health", "Protection", "Community", "General", "Agriculture", "WaSH", "Nutrition", "DRR", "Climate Change"];
 
 function generateSlug(title: string): string {
   return title
@@ -45,8 +46,8 @@ export default function AdminNewsEditPage() {
           setNotFound(true);
           return;
         }
-        const data = await res.json();
-        const article = data.article ?? data;
+        const json = await res.json();
+        const article = json.data ?? json.article ?? json;
 
         setTitle(article.title ?? "");
         setFormSlug(article.slug ?? slug);
@@ -276,12 +277,10 @@ export default function AdminNewsEditPage() {
           <label className="mb-1.5 block text-sm font-medium text-gray-700">
             Content
           </label>
-          <textarea
+          <RichTextEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={10}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            placeholder="Full article content"
+            onChange={setContent}
+            placeholder="Write your article content here..."
           />
         </div>
 

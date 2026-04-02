@@ -25,20 +25,20 @@ const contactInfo = [
     icon: HiLocationMarker,
     title: "Our Office",
     lines: [
-      "Cox's Bazar District",
-      "Chittagong Division",
+      "Kulsum Palace, Mira Bari Road",
+      "Battala, Barisal-8200",
       "Bangladesh",
     ],
   },
   {
     icon: HiMail,
     title: "Email Us",
-    lines: ["info@rohingyainbangladesh.org", "media@rohingyainbangladesh.org"],
+    lines: ["arohibd@gmail.com", "alamatmkhorshed@gmail.com"],
   },
   {
     icon: HiPhone,
     title: "Call Us",
-    lines: ["+880-341-XXXXXX", "+880-2-XXXXXXXX (Dhaka)"],
+    lines: ["+880 1712-127312", "+880 431-62162"],
   },
   {
     icon: HiClock,

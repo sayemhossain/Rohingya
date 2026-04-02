@@ -39,8 +39,8 @@ export default function SectorsGrid({ sectors }: { sectors?: SectorItem[] }) {
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="section-title">Our Sectors</h2>
-          <p className="section-subtitle">
-            Comprehensive humanitarian support across key areas
+          <p className="section-subtitle mx-auto">
+            Comprehensive development support across key areas
           </p>
         </div>
 

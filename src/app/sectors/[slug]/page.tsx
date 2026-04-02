@@ -31,11 +31,12 @@ const iconMap: Record<string, IconType> = {
 const gradientMap: Record<string, string> = {
   education: "from-teal-600 to-emerald-500",
   health: "from-rose-500 to-pink-500",
-  shelter: "from-amber-500 to-orange-500",
+  drr: "from-amber-500 to-orange-500",
   wash: "from-blue-500 to-cyan-500",
-  "food-security": "from-green-600 to-lime-500",
+  "food-security-and-livelihood": "from-green-600 to-lime-500",
   protection: "from-indigo-500 to-purple-500",
-  livelihoods: "from-yellow-500 to-amber-500",
+  "climate-change": "from-yellow-500 to-amber-500",
+  agriculture: "from-lime-500 to-green-500",
   nutrition: "from-red-500 to-rose-500",
 };
 
@@ -117,7 +118,7 @@ export default function SectorDetailPage() {
                 {sector.name.toLowerCase()} programs.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {sector.stats.map(
                 (stat: { label: string; value: string; icon?: string }) => (
                   <div
@@ -146,7 +147,7 @@ export default function SectorDetailPage() {
               <h2 className="section-title">Our Programs</h2>
               <p className="section-subtitle mx-auto">
                 Targeted interventions designed to address the most pressing{" "}
-                {sector.name.toLowerCase()} needs in the refugee camps.
+                {sector.name.toLowerCase()} needs in our communities.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -218,8 +219,8 @@ export default function SectorDetailPage() {
           </h2>
           <p className="text-lg text-white/80 max-w-2xl mx-auto mb-8">
             Your contribution can help expand {sector.name.toLowerCase()}{" "}
-            services for Rohingya refugees. Join us in making a lasting
-            difference in the lives of displaced communities.
+            services for disadvantaged communities. Join us in making a lasting
+            difference in the lives of vulnerable people.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

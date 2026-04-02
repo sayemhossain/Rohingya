@@ -88,6 +88,14 @@ export function useGallery() {
   });
 }
 
+// About page content
+export function useAbout() {
+  return useQuery({
+    queryKey: ["about"],
+    queryFn: () => fetcher<Record<string, unknown>>("/api/about"),
+  });
+}
+
 // Team members
 export function useTeam() {
   return useQuery({

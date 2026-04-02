@@ -13,9 +13,9 @@ import {
 } from "react-icons/hi";
 
 export const metadata: Metadata = {
-  title: "Get Involved — Rohingya in Bangladesh",
+  title: "Get Involved — AROHI",
   description:
-    "Make a difference in the lives of Rohingya refugees. Donate, volunteer, explore careers, or partner with us to support humanitarian efforts in Bangladesh.",
+    "Make a difference in the lives of disadvantaged communities. Donate, volunteer, explore careers, or partner with AROHI to support development efforts in Barisal Division, Bangladesh.",
 };
 
 const donationTiers = [
@@ -35,7 +35,7 @@ const donationTiers = [
     amount: "$50",
     title: "Family Care",
     description:
-      "Feeds a refugee family for one month and provides educational materials for two children.",
+      "Supports a rural family for one month with food security and provides educational materials for two children.",
     items: [
       "Monthly food rations for a family",
       "School supplies for 2 children",
@@ -63,7 +63,7 @@ const volunteerRoles = [
     title: "Field Worker",
     icon: HiGlobe,
     description:
-      "Work directly in Cox's Bazar refugee camps, assisting with distribution, education programs, and community engagement. Experience the impact of humanitarian work firsthand while making a tangible difference in people's daily lives.",
+      "Work directly in Barisal Division communities, assisting with program delivery, education, and community engagement. Experience the impact of development work firsthand while making a tangible difference in people's daily lives.",
     requirements: [
       "Minimum 3-month commitment",
       "Prior humanitarian experience preferred",
@@ -85,7 +85,7 @@ const volunteerRoles = [
     title: "Fundraiser",
     icon: HiSpeakerphone,
     description:
-      "Organize events, campaigns, and outreach in your community to raise awareness and funds for Rohingya refugees. Become an ambassador for the cause and inspire others to take action.",
+      "Organize events, campaigns, and outreach in your community to raise awareness and funds for AROHI's programs. Become an ambassador for the cause and inspire others to take action.",
     requirements: [
       "Strong communication skills",
       "Community network or social reach",
@@ -114,7 +114,7 @@ export default function GetInvolvedPage() {
           <p className="text-lg md:text-xl text-white/80 max-w-2xl">
             Your support can transform lives. Whether through donations,
             volunteering, or partnerships, every contribution brings hope to
-            Rohingya refugees in Bangladesh.
+            disadvantaged communities in Barisal Division.
           </p>
         </div>
       </section>
@@ -129,9 +129,9 @@ export default function GetInvolvedPage() {
             </div>
             <h2 className="section-title">Your Generosity Saves Lives</h2>
             <p className="section-subtitle mx-auto">
-              Every dollar you give goes directly toward providing food, shelter,
-              healthcare, and education to over one million Rohingya refugees
-              living in Cox&apos;s Bazar. Even a small contribution creates a
+              Every dollar you give goes directly toward providing health,
+              education, WaSH, and livelihood support to disadvantaged
+              communities in Barisal Division. Even a small contribution creates a
               ripple of lasting impact.
             </p>
           </div>
@@ -267,9 +267,9 @@ export default function GetInvolvedPage() {
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Join our team of dedicated professionals working on the front
-                lines of one of the world&apos;s largest refugee crises. We
-                offer meaningful careers across program management, logistics,
-                communications, finance, and more.
+                lines of community development in southern Bangladesh. We
+                offer meaningful careers across program management, field
+                operations, communications, finance, and more.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
                 We are committed to diversity, equity, and inclusion. We welcome
@@ -289,7 +289,7 @@ export default function GetInvolvedPage() {
               </h3>
               <ul className="space-y-4">
                 {[
-                  "Direct impact on the lives of over 1 million refugees",
+                  "Direct impact on the lives of disadvantaged communities",
                   "Work alongside experienced humanitarian professionals",
                   "Professional growth and training opportunities",
                   "Competitive compensation and benefits",
@@ -324,7 +324,7 @@ export default function GetInvolvedPage() {
             <p className="section-subtitle mx-auto mb-8">
               We collaborate with NGOs, corporations, government agencies, and
               academic institutions to amplify our humanitarian impact. Together,
-              we can achieve more for Rohingya refugees than any of us can alone.
+              we can achieve more for disadvantaged communities than any of us can alone.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 text-left">
@@ -347,7 +347,7 @@ export default function GetInvolvedPage() {
                 {
                   title: "Advocacy Partners",
                   description:
-                    "Amplify the voices of Rohingya refugees and advocate for policy changes.",
+                    "Amplify the voices of marginalized communities and advocate for policy changes.",
                 },
               ].map((partner) => (
                 <div

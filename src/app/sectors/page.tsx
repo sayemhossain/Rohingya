@@ -29,11 +29,12 @@ const iconMap: Record<string, IconType> = {
 const gradientMap: Record<string, string> = {
   education: "from-teal-600 to-emerald-500",
   health: "from-rose-500 to-pink-500",
-  shelter: "from-amber-500 to-orange-500",
+  drr: "from-amber-500 to-orange-500",
   wash: "from-blue-500 to-cyan-500",
-  "food-security": "from-green-600 to-lime-500",
+  "food-security-and-livelihood": "from-green-600 to-lime-500",
   protection: "from-indigo-500 to-purple-500",
-  livelihoods: "from-yellow-500 to-amber-500",
+  "climate-change": "from-yellow-500 to-amber-500",
+  agriculture: "from-lime-500 to-green-500",
   nutrition: "from-red-500 to-rose-500",
 };
 
@@ -67,9 +68,9 @@ export default function SectorsPage() {
             Our Sectors
           </h1>
           <p className="text-lg md:text-xl text-white/80 max-w-2xl">
-            Comprehensive humanitarian support across eight critical areas,
-            working together to protect, empower, and uplift Rohingya refugees
-            in Bangladesh.
+            Comprehensive development support across nine critical areas,
+            working together to empower and uplift disadvantaged communities
+            in Barisal Division.
           </p>
         </div>
       </section>
@@ -80,9 +81,9 @@ export default function SectorsPage() {
           <div className="text-center mb-14">
             <h2 className="section-title">Explore Our Work</h2>
             <p className="section-subtitle mx-auto">
-              Each sector addresses a vital aspect of the humanitarian response,
-              delivering targeted programs to meet the diverse needs of over one
-              million refugees.
+              Each sector addresses a vital aspect of community development,
+              delivering targeted programs to meet the diverse needs of
+              disadvantaged communities across Barisal Division.
             </p>
           </div>
 
@@ -145,8 +146,8 @@ export default function SectorsPage() {
         <div className="container-custom text-center">
           <h2 className="section-title">Want to Make a Difference?</h2>
           <p className="section-subtitle mx-auto mb-8">
-            Your support can help transform the lives of Rohingya refugees.
-            Whether through donations, volunteering, or advocacy, every
+            Your support can help transform the lives of disadvantaged communities.
+            Whether through donations, volunteering, or partnership, every
             contribution matters.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

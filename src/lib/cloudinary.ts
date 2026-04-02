@@ -20,7 +20,7 @@ export async function uploadImage(
 ): Promise<{ secure_url: string; public_id: string }> {
   ensureConfig();
   const result = await cloudinary.uploader.upload(fileOrBase64, {
-    folder: 'rohingya',
+    folder: 'arohi',
     resource_type: 'image',
   });
 
