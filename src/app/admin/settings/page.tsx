@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   HiPlus,
   HiTrash,
@@ -9,10 +10,9 @@ import {
   HiCheck,
   HiRefresh,
   HiMenuAlt4,
-  HiPhotograph,
-  HiChartBar,
-  HiUserGroup,
   HiFolder,
+  HiPhotograph,
+  HiUpload,
 } from "react-icons/hi";
 
 /* ---------- types ---------- */
@@ -23,32 +23,6 @@ interface MenuItem {
   order: number;
   children?: { label: string; href: string }[];
 }
-
-interface HeroSlide {
-  title: string;
-  subtitle: string;
-  ctaText: string;
-  ctaLink: string;
-}
-
-interface StatItem {
-  label: string;
-  value: string;
-  icon: string;
-}
-
-interface Partner {
-  name: string;
-}
-
-type TabKey = "menu" | "hero" | "stats" | "partners";
-
-const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: "menu", label: "Menu", icon: HiMenuAlt4 },
-  { key: "hero", label: "Hero Slides", icon: HiPhotograph },
-  { key: "stats", label: "Stats", icon: HiChartBar },
-  { key: "partners", label: "Partners", icon: HiUserGroup },
-];
 
 /* ---------- small feedback component ---------- */
 
@@ -78,51 +52,151 @@ function Feedback({
 }
 
 /* ================================================================
-   MAIN PAGE
+   SETTINGS PAGE — Menu management
    ================================================================ */
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("menu");
-
   return (
     <div className="space-y-6">
       {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
+          <HiMenuAlt4 className="h-5 w-5 text-brand" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Site Settings</h1>
+          <p className="text-sm text-gray-500">
+            Configure the website logo and header navigation menu.
+          </p>
+        </div>
+      </div>
+
+      <LogoSection />
+      <MenuTab />
+    </div>
+  );
+}
+
+/* ================================================================
+   LOGO SECTION
+   ================================================================ */
+
+function LogoSection() {
+  const [logo, setLogo] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [feedback, setFeedback] = useState({ msg: "", type: "success" as "success" | "error" });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/settings?key=site_logo");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data?.value) setLogo(json.data.value);
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setFeedback({ msg: "", type: "success" });
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url || data.secure_url) {
+        setLogo(data.url || data.secure_url);
+      } else {
+        setFeedback({ msg: "Failed to upload logo", type: "error" });
+      }
+    } catch {
+      setFeedback({ msg: "Failed to upload logo", type: "error" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "site_logo", value: logo }),
+      });
+      setFeedback({
+        msg: res.ok ? "Logo saved successfully" : "Failed to save logo",
+        type: res.ok ? "success" : "error",
+      });
+    } catch {
+      setFeedback({ msg: "Failed to save logo", type: "error" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setFeedback({ msg: "", type: "success" }), 3000);
+    }
+  }
+
+  if (loading) return <Loader />;
+
+  return (
+    <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Site Settings</h1>
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          <HiPhotograph className="h-5 w-5 text-brand" />
+          Website Logo
+        </h2>
         <p className="mt-1 text-sm text-gray-500">
-          Configure menu, hero slides, statistics, and partners.
+          Upload a logo to replace the text logo in the header. Leave empty to keep the
+          default “AROHI” text. Transparent PNG, around 200×56px, works best.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex gap-4 overflow-x-auto" aria-label="Tabs">
-          {tabs.map((t) => {
-            const Icon = t.icon;
-            const active = activeTab === t.key;
-            return (
-              <button
-                key={t.key}
-                onClick={() => setActiveTab(t.key)}
-                className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
-                  active
-                    ? "border-brand text-brand"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {t.label}
-              </button>
-            );
-          })}
-        </nav>
+      <Feedback msg={feedback.msg} type={feedback.type} onDismiss={() => setFeedback({ msg: "", type: "success" })} />
+
+      {/* Preview */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex h-16 min-w-[180px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4">
+          {logo ? (
+            <Image src={logo} alt="Logo preview" width={180} height={48} className="h-12 w-auto object-contain" />
+          ) : (
+            <span className="flex flex-col leading-tight">
+              <span className="font-heading text-xl font-bold tracking-tight text-brand">AROHI</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500">
+                Rural Opportunities &amp; Human Initiatives
+              </span>
+            </span>
+          )}
+        </div>
+
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50">
+          <HiUpload className="h-4 w-4" />
+          {uploading ? "Uploading..." : logo ? "Change logo" : "Upload logo"}
+          <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+        </label>
+
+        {logo && (
+          <button
+            onClick={() => setLogo("")}
+            className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-red-600"
+          >
+            <HiTrash className="h-4 w-4" />
+            Remove
+          </button>
+        )}
       </div>
 
-      {/* Tab panels */}
-      {activeTab === "menu" && <MenuTab />}
-      {activeTab === "hero" && <HeroTab />}
-      {activeTab === "stats" && <StatsTab />}
-      {activeTab === "partners" && <PartnersTab />}
+      <SaveButton saving={saving || uploading} onClick={save} />
     </div>
   );
 }
@@ -392,415 +466,6 @@ function MenuTab() {
           />
           <button
             onClick={addItem}
-            className="inline-flex items-center gap-1 rounded-lg bg-brand-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-accent/90"
-          >
-            <HiPlus className="h-4 w-4" />
-            Add
-          </button>
-        </div>
-      </div>
-
-      <SaveButton saving={saving} onClick={save} />
-    </div>
-  );
-}
-
-/* ================================================================
-   HERO SLIDES TAB
-   ================================================================ */
-
-function HeroTab() {
-  const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ msg: "", type: "success" as "success" | "error" });
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/settings?key=hero_slides");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data?.value) {
-          setSlides(json.data.value);
-        }
-      }
-    } catch {
-      setFeedback({ msg: "Failed to load hero slides", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  function updateSlide(index: number, field: keyof HeroSlide, value: string) {
-    const next = [...slides];
-    next[index] = { ...next[index], [field]: value };
-    setSlides(next);
-  }
-
-  function addSlide() {
-    setSlides((prev) => [
-      ...prev,
-      { title: "", subtitle: "", ctaText: "", ctaLink: "" },
-    ]);
-  }
-
-  function removeSlide(index: number) {
-    setSlides((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  async function save() {
-    setSaving(true);
-    setFeedback({ msg: "", type: "success" });
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "hero_slides", value: slides }),
-      });
-      if (res.ok) {
-        setFeedback({ msg: "Hero slides saved successfully", type: "success" });
-      } else {
-        setFeedback({ msg: "Failed to save hero slides", type: "error" });
-      }
-    } catch {
-      setFeedback({ msg: "Failed to save hero slides", type: "error" });
-    } finally {
-      setSaving(false);
-      setTimeout(() => setFeedback({ msg: "", type: "success" }), 3000);
-    }
-  }
-
-  if (loading) return <Loader />;
-
-  return (
-    <div className="space-y-4">
-      <Feedback msg={feedback.msg} type={feedback.type} onDismiss={() => setFeedback({ msg: "", type: "success" })} />
-
-      {slides.map((slide, idx) => (
-        <div
-          key={idx}
-          className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm"
-        >
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">
-              Slide {idx + 1}
-            </h3>
-            <button
-              onClick={() => removeSlide(idx)}
-              className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-            >
-              <HiTrash className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
-                Title
-              </label>
-              <input
-                type="text"
-                value={slide.title}
-                onChange={(e) => updateSlide(idx, "title", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
-                Subtitle
-              </label>
-              <input
-                type="text"
-                value={slide.subtitle}
-                onChange={(e) => updateSlide(idx, "subtitle", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
-                CTA Text
-              </label>
-              <input
-                type="text"
-                value={slide.ctaText}
-                onChange={(e) => updateSlide(idx, "ctaText", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
-                CTA Link
-              </label>
-              <input
-                type="text"
-                value={slide.ctaLink}
-                onChange={(e) => updateSlide(idx, "ctaLink", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-
-      <button
-        onClick={addSlide}
-        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-brand hover:text-brand"
-      >
-        <HiPlus className="h-4 w-4" />
-        Add Slide
-      </button>
-
-      <SaveButton saving={saving} onClick={save} />
-    </div>
-  );
-}
-
-/* ================================================================
-   STATS TAB
-   ================================================================ */
-
-function StatsTab() {
-  const [stats, setStats] = useState<StatItem[]>([
-    { label: "", value: "", icon: "" },
-    { label: "", value: "", icon: "" },
-    { label: "", value: "", icon: "" },
-    { label: "", value: "", icon: "" },
-  ]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ msg: "", type: "success" as "success" | "error" });
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/settings?key=stats");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data?.value) {
-          const fetched = json.data.value as StatItem[];
-          // Ensure always 4 items
-          while (fetched.length < 4) fetched.push({ label: "", value: "", icon: "" });
-          setStats(fetched.slice(0, 4));
-        }
-      }
-    } catch {
-      setFeedback({ msg: "Failed to load stats", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  function updateStat(index: number, field: keyof StatItem, value: string) {
-    const next = [...stats];
-    next[index] = { ...next[index], [field]: value };
-    setStats(next);
-  }
-
-  async function save() {
-    setSaving(true);
-    setFeedback({ msg: "", type: "success" });
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "stats", value: stats }),
-      });
-      if (res.ok) {
-        setFeedback({ msg: "Stats saved successfully", type: "success" });
-      } else {
-        setFeedback({ msg: "Failed to save stats", type: "error" });
-      }
-    } catch {
-      setFeedback({ msg: "Failed to save stats", type: "error" });
-    } finally {
-      setSaving(false);
-      setTimeout(() => setFeedback({ msg: "", type: "success" }), 3000);
-    }
-  }
-
-  if (loading) return <Loader />;
-
-  return (
-    <div className="space-y-4">
-      <Feedback msg={feedback.msg} type={feedback.type} onDismiss={() => setFeedback({ msg: "", type: "success" })} />
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm"
-          >
-            <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Stat {idx + 1}
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">
-                  Label
-                </label>
-                <input
-                  type="text"
-                  value={stat.label}
-                  onChange={(e) => updateStat(idx, "label", e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  placeholder="e.g., Refugees"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">
-                  Value
-                </label>
-                <input
-                  type="text"
-                  value={stat.value}
-                  onChange={(e) => updateStat(idx, "value", e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  placeholder="e.g., 1,000,000+"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">
-                  Icon
-                </label>
-                <input
-                  type="text"
-                  value={stat.icon}
-                  onChange={(e) => updateStat(idx, "icon", e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  placeholder="e.g., HiUsers"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <SaveButton saving={saving} onClick={save} />
-    </div>
-  );
-}
-
-/* ================================================================
-   PARTNERS TAB
-   ================================================================ */
-
-function PartnersTab() {
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ msg: "", type: "success" as "success" | "error" });
-  const [newName, setNewName] = useState("");
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/settings?key=partner_logos");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data?.value) {
-          setPartners(json.data.value);
-        }
-      }
-    } catch {
-      setFeedback({ msg: "Failed to load partners", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  function addPartner() {
-    if (!newName.trim()) return;
-    setPartners((prev) => [...prev, { name: newName.trim() }]);
-    setNewName("");
-  }
-
-  function removePartner(index: number) {
-    setPartners((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  async function save() {
-    setSaving(true);
-    setFeedback({ msg: "", type: "success" });
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "partner_logos", value: partners }),
-      });
-      if (res.ok) {
-        setFeedback({ msg: "Partners saved successfully", type: "success" });
-      } else {
-        setFeedback({ msg: "Failed to save partners", type: "error" });
-      }
-    } catch {
-      setFeedback({ msg: "Failed to save partners", type: "error" });
-    } finally {
-      setSaving(false);
-      setTimeout(() => setFeedback({ msg: "", type: "success" }), 3000);
-    }
-  }
-
-  if (loading) return <Loader />;
-
-  return (
-    <div className="space-y-4">
-      <Feedback msg={feedback.msg} type={feedback.type} onDismiss={() => setFeedback({ msg: "", type: "success" })} />
-
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        {partners.length === 0 ? (
-          <div className="py-8 text-center text-sm text-gray-400">
-            No partners added yet.
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {partners.map((partner, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between px-4 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded bg-brand/10 text-xs font-bold text-brand">
-                    {partner.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {partner.name}
-                  </span>
-                </div>
-                <button
-                  onClick={() => removePartner(idx)}
-                  className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                >
-                  <HiTrash className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Add new partner */}
-        <div className="flex items-center gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3">
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addPartner()}
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            placeholder="Partner name"
-          />
-          <button
-            onClick={addPartner}
             className="inline-flex items-center gap-1 rounded-lg bg-brand-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-accent/90"
           >
             <HiPlus className="h-4 w-4" />

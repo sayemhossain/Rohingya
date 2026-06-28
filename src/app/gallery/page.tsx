@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGallery } from "@/hooks/use-api";
 import Link from "next/link";
 import Image from "next/image";
-import { HiChevronRight, HiX } from "react-icons/hi";
+import { HiChevronRight, HiChevronLeft, HiX, HiZoomIn } from "react-icons/hi";
 
 interface GalleryItem {
   _id: string;
@@ -18,197 +18,234 @@ interface GalleryItem {
 
 const defaultCategories = ["All", "Camps", "Education", "Health", "Community"];
 
+const categoryGradient = (category: string) =>
+  category === "Camps" ? "from-amber-600 to-orange-500" :
+  category === "Education" ? "from-teal-600 to-emerald-500" :
+  category === "Health" ? "from-cyan-600 to-blue-500" :
+  category === "Community" ? "from-emerald-600 to-green-500" :
+  "from-brand to-brand-accent";
+
 export default function GalleryPage() {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
   const { data: galleryItems = [], isLoading: loading, isError } = useGallery() as unknown as { data: GalleryItem[]; isLoading: boolean; isError: boolean };
   const error = isError ? "Failed to load gallery items." : "";
 
-  // Derive categories from fetched data
   const categorySet = new Set(galleryItems.map((item) => item.category));
-  const categories =
-    categorySet.size > 0
-      ? ["All", ...Array.from(categorySet)]
-      : defaultCategories;
+  const categories = categorySet.size > 0 ? ["All", ...Array.from(categorySet)] : defaultCategories;
 
   const filtered =
     activeFilter === "All"
       ? galleryItems
       : galleryItems.filter((item) => item.category === activeFilter);
 
+  const count = (cat: string) =>
+    cat === "All" ? galleryItems.length : galleryItems.filter((i) => i.category === cat).length;
+
+  // Reset lightbox when the filter changes (indices would no longer match).
+  useEffect(() => { setLightbox(null); }, [activeFilter]);
+
+  const close = useCallback(() => setLightbox(null), []);
+  const prev = useCallback(
+    () => setLightbox((i) => (i === null ? i : (i - 1 + filtered.length) % filtered.length)),
+    [filtered.length]
+  );
+  const next = useCallback(
+    () => setLightbox((i) => (i === null ? i : (i + 1) % filtered.length)),
+    [filtered.length]
+  );
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [lightbox, close, prev, next]);
+
+  const current = lightbox !== null ? filtered[lightbox] : null;
+
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-brand-dark via-brand to-brand-light py-20 md:py-28">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand to-brand-light py-20 md:py-28">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-10 h-72 w-72 rounded-full bg-brand-accent/20 blur-3xl" />
         <div className="container-custom relative z-10">
-          {/* Breadcrumb */}
-          <nav className="flex items-center text-sm text-white/70 mb-6">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
-            </Link>
-            <HiChevronRight className="mx-2 w-4 h-4" />
-            <span className="text-white font-medium">Gallery</span>
+          <nav className="mb-6 flex items-center text-sm text-white/70">
+            <Link href="/" className="transition-colors hover:text-white">Home</Link>
+            <HiChevronRight className="mx-2 h-4 w-4" />
+            <span className="font-medium text-white">Gallery</span>
           </nav>
-
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Photo Gallery
-          </h1>
-          <p className="text-lg text-white/80 max-w-2xl">
-            Visual stories from AROHI&apos;s programs — documenting
-            community empowerment, development, and impact across Barisal Division.
+          <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">Photo Gallery</h1>
+          <p className="max-w-2xl text-lg text-white/80">
+            Visual stories from AROHI&apos;s programs — documenting community
+            empowerment, development, and impact across Barisal Division.
           </p>
         </div>
       </section>
 
       {/* Gallery Section */}
-      <section className="section-padding bg-gray-50">
+      <section className="section-padding bg-gradient-to-b from-white to-gray-50">
         <div className="container-custom">
           {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2 mb-10">
+          <div className="mb-10 flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
                   activeFilter === cat
-                    ? "bg-brand text-white"
-                    : "bg-white text-gray-600 hover:bg-brand/10 hover:text-brand border border-gray-200"
+                    ? "bg-gradient-to-r from-brand to-brand-accent text-white shadow-md shadow-brand/20"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
                 }`}
               >
                 {cat}
+                <span className={`rounded-full px-1.5 text-[11px] ${activeFilter === cat ? "bg-white/20" : "bg-gray-100 text-gray-500"}`}>
+                  {count(cat)}
+                </span>
               </button>
             ))}
           </div>
 
-          {/* Loading State */}
           {loading && (
-            <div className="text-center py-16">
-              <div className="inline-block w-8 h-8 border-4 border-brand/30 border-t-brand rounded-full animate-spin" />
-              <p className="text-gray-500 mt-4">Loading gallery...</p>
+            <div className="py-16 text-center">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-brand/30 border-t-brand" />
+              <p className="mt-4 text-gray-500">Loading gallery...</p>
             </div>
           )}
 
-          {/* Error State */}
           {!loading && error && (
-            <div className="text-center py-16">
-              <p className="text-gray-500 text-lg">{error}</p>
-            </div>
+            <div className="py-16 text-center"><p className="text-lg text-gray-500">{error}</p></div>
           )}
 
-          {/* Empty State */}
           {!loading && !error && galleryItems.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-gray-500 text-lg">
-                No gallery items available yet. Check back soon.
-              </p>
-            </div>
+            <div className="py-16 text-center"><p className="text-lg text-gray-500">No gallery items available yet. Check back soon.</p></div>
           )}
 
-          {/* Masonry-like Grid */}
+          {/* Masonry grid */}
           {!loading && !error && filtered.length > 0 && (
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-              {filtered.map((item, index) => (
-                <button
-                  key={item._id}
-                  onClick={() => setLightbox(item)}
-                  className={`relative w-full rounded-xl overflow-hidden group cursor-pointer break-inside-avoid block ${
-                    index % 3 === 0 ? "h-80" : "h-56"
-                  }`}
-                >
-                  {/* Image or gradient fallback */}
-                  {item.imageUrl && item.imageUrl.startsWith("http") ? (
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.caption || item.title}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${
-                      item.category === "Camps" ? "from-amber-600 to-orange-500" :
-                      item.category === "Education" ? "from-teal-600 to-emerald-500" :
-                      item.category === "Health" ? "from-cyan-600 to-blue-500" :
-                      item.category === "Community" ? "from-emerald-600 to-green-500" :
-                      "from-brand to-brand-accent"
-                    }`}>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-white/20 text-7xl font-bold">
-                          {item.category.charAt(0)}
-                        </span>
+            <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3">
+              {filtered.map((item, index) => {
+                const isHttp = item.imageUrl && item.imageUrl.startsWith("http");
+                return (
+                  <button
+                    key={item._id}
+                    onClick={() => setLightbox(index)}
+                    className={`group relative block w-full cursor-pointer break-inside-avoid overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                      index % 5 === 0 ? "h-80" : index % 3 === 0 ? "h-72" : "h-56"
+                    }`}
+                  >
+                    {isHttp ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.caption || item.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradient(item.category)}`}>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-7xl font-bold text-white/20">{item.category.charAt(0)}</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-end">
-                    <div className="p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 w-full">
-                      <span className="text-xs font-semibold text-brand-accent uppercase tracking-wider">
-                        {item.category}
-                      </span>
-                      <p className="text-white text-sm mt-1 leading-snug">
-                        {item.caption || item.title}
-                      </p>
+                    {/* Gradient + hover wash */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
+
+                    {/* Category chip */}
+                    <span className="absolute left-3 top-3 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md ring-1 ring-white/30">
+                      {item.category}
+                    </span>
+
+                    {/* Zoom button */}
+                    <span className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 scale-90 items-center justify-center rounded-full bg-white/20 text-white opacity-0 ring-1 ring-white/40 backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
+                      <HiZoomIn className="h-4 w-4" />
+                    </span>
+
+                    {/* Caption */}
+                    <div className="absolute inset-x-0 bottom-0 translate-y-2 p-4 text-left opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <p className="text-sm font-medium leading-snug text-white">{item.caption || item.title}</p>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      {/* Lightbox Modal */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-fade-in"
-          onClick={() => setLightbox(null)}
-        >
-          <div
-            className="relative w-full max-w-3xl rounded-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setLightbox(null)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/40 transition-colors"
-            >
-              <HiX className="w-5 h-5" />
+      {/* Lightbox */}
+      {current && (
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/90 backdrop-blur-md" onClick={close}>
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 py-4 sm:px-6" onClick={(e) => e.stopPropagation()}>
+            <span className="text-sm font-medium text-white/70">
+              {lightbox! + 1} <span className="text-white/40">/ {filtered.length}</span>
+            </span>
+            <button onClick={close} aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
+              <HiX className="h-6 w-6" />
             </button>
+          </div>
 
-            {/* Large Image or Gradient */}
-            <div className="w-full h-[60vh] relative flex items-center justify-center">
-              {lightbox.imageUrl && lightbox.imageUrl.startsWith("http") ? (
-                <Image
-                  src={lightbox.imageUrl}
-                  alt={lightbox.caption || lightbox.title}
-                  fill
-                  className="object-contain bg-black"
-                />
+          {/* Stage */}
+          <div className="relative flex flex-1 items-center justify-center px-4 sm:px-16">
+            {filtered.length > 1 && (
+              <>
+                <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous" className="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-5">
+                  <HiChevronLeft className="h-7 w-7" />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next" className="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-5">
+                  <HiChevronRight className="h-7 w-7" />
+                </button>
+              </>
+            )}
+
+            <figure className="relative h-full w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+              {current.imageUrl && current.imageUrl.startsWith("http") ? (
+                <Image key={current._id} src={current.imageUrl} alt={current.caption || current.title} fill sizes="100vw" className="object-contain" />
               ) : (
-                <div className={`w-full h-full bg-gradient-to-br ${
-                  lightbox.category === "Camps" ? "from-amber-600 to-orange-500" :
-                  lightbox.category === "Education" ? "from-teal-600 to-emerald-500" :
-                  lightbox.category === "Health" ? "from-cyan-600 to-blue-500" :
-                  lightbox.category === "Community" ? "from-emerald-600 to-green-500" :
-                  "from-brand to-brand-accent"
-                } flex items-center justify-center`}>
-                  <span className="text-white/20 text-9xl font-bold">
-                    {lightbox.category.charAt(0)}
-                  </span>
+                <div className={`flex h-full w-full items-center justify-center rounded-2xl bg-gradient-to-br ${categoryGradient(current.category)}`}>
+                  <span className="text-9xl font-bold text-white/20">{current.category.charAt(0)}</span>
                 </div>
               )}
-            </div>
+            </figure>
+          </div>
 
-            {/* Caption Bar */}
-            <div className="bg-white p-5">
-              <span className="text-xs font-semibold text-brand-accent uppercase tracking-wider">
-                {lightbox.category}
-              </span>
-              <p className="text-dark font-medium mt-1">
-                {lightbox.caption || lightbox.title}
-              </p>
-            </div>
+          {/* Caption + thumbnails */}
+          <div className="px-4 pb-5 pt-2 sm:px-6" onClick={(e) => e.stopPropagation()}>
+            <p className="mx-auto mb-3 max-w-3xl text-center text-sm text-white/80">
+              <span className="font-semibold text-brand-accent">{current.category}</span>
+              <span className="mx-2 text-white/30">·</span>
+              {current.caption || current.title}
+            </p>
+            {filtered.length > 1 && (
+              <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {filtered.map((item, i) => (
+                  <button
+                    key={`thumb-${item._id}`}
+                    onClick={() => setLightbox(i)}
+                    aria-label={`Go to image ${i + 1}`}
+                    className={`relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg ring-2 transition-all ${i === lightbox ? "opacity-100 ring-brand-accent" : "opacity-50 ring-transparent hover:opacity-90"}`}
+                  >
+                    {item.imageUrl && item.imageUrl.startsWith("http") ? (
+                      <Image src={item.imageUrl} alt="" fill sizes="80px" className="object-cover" />
+                    ) : (
+                      <div className={`h-full w-full bg-gradient-to-br ${categoryGradient(item.category)}`} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

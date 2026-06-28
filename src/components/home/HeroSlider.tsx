@@ -48,10 +48,11 @@ export default function HeroSlider({ slides }: { slides?: Slide[] | null }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[600px] md:h-[700px] overflow-hidden">
+    <section className="relative w-full min-h-[32rem] sm:min-h-0 sm:aspect-[16/9] sm:max-h-[88vh] overflow-hidden">
       {items.map((slide, index) => {
         const gradient = slide.gradient || "from-brand-dark to-brand";
         const hasImage = !!slide.image;
+        const hasText = !!(slide.title || slide.subtitle || slide.ctaText);
 
         return (
           <div
@@ -75,46 +76,60 @@ export default function HeroSlider({ slides }: { slides?: Slide[] | null }) {
                 : undefined
             }
           >
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10" />
+            {/* Overlay — deep & rich when there is text to keep it readable, light when image-only */}
+            {hasText ? (
+              <>
+                <div className="absolute inset-0 z-10 bg-black/20" />
+                <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </>
+            ) : (
+              <div className="absolute inset-0 z-10 bg-black/10" />
+            )}
 
-            {/* Content */}
-            <div className="relative z-20 h-full flex items-center">
-              <div className="container-custom">
-                <div className="max-w-3xl">
-                  <h1
-                    className={`font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 transition-all duration-700 delay-200 ${
-                      index === current
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-8"
-                    }`}
-                  >
-                    {slide.title}
-                  </h1>
-                  <p
-                    className={`text-base sm:text-lg md:text-xl text-white/90 mb-8 max-w-2xl leading-relaxed transition-all duration-700 delay-300 ${
-                      index === current
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-8"
-                    }`}
-                  >
-                    {slide.subtitle}
-                  </p>
-                  {slide.ctaText && (
-                    <a
-                      href={slide.ctaLink}
-                      className={`btn-accent inline-block px-8 py-3 rounded-md text-white font-semibold text-base md:text-lg bg-brand-accent hover:bg-brand-accent-dark transition-all duration-700 delay-[400ms] ${
-                        index === current
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-8"
-                      }`}
-                    >
-                      {slide.ctaText}
-                    </a>
-                  )}
+            {/* Content — only rendered when the slide has text */}
+            {hasText && (
+              <div className="relative z-20 h-full flex items-center">
+                <div className="container-custom">
+                  <div className="max-w-3xl">
+                    {slide.title && (
+                      <h1
+                        className={`font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 transition-all duration-700 delay-200 ${
+                          index === current
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-8"
+                        }`}
+                      >
+                        {slide.title}
+                      </h1>
+                    )}
+                    {slide.subtitle && (
+                      <p
+                        className={`text-base sm:text-lg md:text-xl text-white/90 mb-8 max-w-2xl leading-relaxed transition-all duration-700 delay-300 ${
+                          index === current
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-8"
+                        }`}
+                      >
+                        {slide.subtitle}
+                      </p>
+                    )}
+                    {slide.ctaText && (
+                      <a
+                        href={slide.ctaLink}
+                        className={`btn-accent inline-block px-8 py-3 rounded-md text-white font-semibold text-base md:text-lg bg-brand-accent hover:bg-brand-accent-dark transition-all duration-700 delay-[400ms] ${
+                          index === current
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-8"
+                        }`}
+                      >
+                        {slide.ctaText}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
@@ -125,14 +140,14 @@ export default function HeroSlider({ slides }: { slides?: Slide[] | null }) {
           <button
             onClick={prev}
             aria-label="Previous slide"
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition-colors duration-300"
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 hidden sm:flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition-colors duration-300"
           >
             <HiChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={next}
             aria-label="Next slide"
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition-colors duration-300"
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 hidden sm:flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition-colors duration-300"
           >
             <HiChevronRight className="w-6 h-6" />
           </button>

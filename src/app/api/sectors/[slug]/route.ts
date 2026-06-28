@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import Sector from "@/models/Sector";
+import SubProgramme from "@/models/SubProgramme";
 import { revalidateSectors } from "@/lib/revalidate";
 
 export async function GET(
@@ -13,7 +14,7 @@ export async function GET(
   try {
     await connectDB();
     const { slug } = await params;
-    const sector = await Sector.findOne({ slug });
+    const sector = await Sector.findOne({ slug }).lean();
 
     if (!sector) {
       return NextResponse.json(
@@ -22,8 +23,25 @@ export async function GET(
       );
     }
 
+    // Attach the assigned, published sub-programmes (preserving the order the
+    // admin arranged them in on the programme page).
+    const assignedIds: string[] = ((sector as { subProgrammes?: unknown[] }).subProgrammes ?? []).map(
+      (id) => String(id)
+    );
+    let subProgrammes: Record<string, unknown>[] = [];
+    if (assignedIds.length > 0) {
+      const docs = await SubProgramme.find({
+        _id: { $in: assignedIds },
+        published: true,
+      }).lean();
+      const byId = new Map(docs.map((d) => [String(d._id), d]));
+      subProgrammes = assignedIds
+        .map((id) => byId.get(id))
+        .filter(Boolean) as Record<string, unknown>[];
+    }
+
     return NextResponse.json(
-      { success: true, data: sector },
+      { success: true, data: { ...sector, subProgrammes } },
       { status: 200 }
     );
   } catch (error) {
@@ -57,7 +75,8 @@ export async function PUT(
     }
 
     revalidateSectors();
-    revalidatePath("/sectors/" + slug);
+    revalidatePath("/programmes/" + slug);
+    revalidatePath("/programmes/" + (body.slug || slug));
 
     return NextResponse.json(
       { success: true, data: sector },
@@ -95,7 +114,7 @@ export async function DELETE(
     }
 
     revalidateSectors();
-    revalidatePath("/sectors/" + slug);
+    revalidatePath("/programmes/" + slug);
 
     return NextResponse.json(
       { success: true, message: "Sector deleted successfully" },

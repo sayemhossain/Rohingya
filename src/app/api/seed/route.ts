@@ -6,6 +6,7 @@ import bcryptjs from "bcryptjs";
 import User from "@/models/User";
 import SiteSettings from "@/models/SiteSettings";
 import Sector from "@/models/Sector";
+import SubProgramme from "@/models/SubProgramme";
 import News from "@/models/News";
 import Resource from "@/models/Resource";
 import Gallery from "@/models/Gallery";
@@ -61,19 +62,19 @@ export async function GET() {
           { label: "Home", href: "/", order: 0 },
           { label: "About", href: "/about", order: 1 },
           {
-            label: "Sectors",
-            href: "/sectors",
+            label: "Our Programmes",
+            href: "/programmes",
             order: 2,
             children: [
-              { label: "Health", href: "/sectors/health" },
-              { label: "Nutrition", href: "/sectors/nutrition" },
-              { label: "Education", href: "/sectors/education" },
-              { label: "WaSH", href: "/sectors/wash" },
-              { label: "Food Security & Livelihood", href: "/sectors/food-security-and-livelihood" },
-              { label: "DRR", href: "/sectors/drr" },
-              { label: "Climate Change", href: "/sectors/climate-change" },
-              { label: "Protection", href: "/sectors/protection" },
-              { label: "Agriculture", href: "/sectors/agriculture" },
+              { label: "Health", href: "/programmes/health" },
+              { label: "Nutrition", href: "/programmes/nutrition" },
+              { label: "Education", href: "/programmes/education" },
+              { label: "WaSH", href: "/programmes/wash" },
+              { label: "Food Security & Livelihood", href: "/programmes/food-security-and-livelihood" },
+              { label: "DRR", href: "/programmes/drr" },
+              { label: "Climate Change", href: "/programmes/climate-change" },
+              { label: "Protection", href: "/programmes/protection" },
+              { label: "Agriculture", href: "/programmes/agriculture" },
             ],
           },
           { label: "News & Stories", href: "/news", order: 3 },
@@ -98,7 +99,7 @@ export async function GET() {
             subtitle:
               "Providing essential health services, nutrition support, and quality education to vulnerable communities in rural and remote areas.",
             ctaText: "Our Programs",
-            ctaLink: "/sectors/health",
+            ctaLink: "/programmes/health",
           },
           {
             title: "Building Resilience Against Climate Change",
@@ -129,6 +130,51 @@ export async function GET() {
           { name: "Department of Agriculture", logo: "" },
           { name: "ACDI/VOCA", logo: "" },
           { name: "The Hunger Project", logo: "" },
+        ],
+      },
+      {
+        key: "home_journey",
+        value: {
+          label: "About AROHI",
+          title: "Journey of AROHI",
+          image: "",
+          body: [
+            "<p>Association of Rural Opportunity and Human Initiative (AROHI) is a community-based development organization established in 2002, registered with the NGO Affairs Bureau &amp; Department of Social Welfare, Government of Bangladesh. We work to improve the socio-economic condition of disadvantaged and vulnerable communities across the Barisal Division through a wide range of humanitarian and development programs.</p>",
+            "<p>AROHI believes in building an inclusive and resilient society where poor and marginalized people can live with dignity, access essential services, and participate actively in community development. Through strong collaboration with government institutions, local authorities, and national &amp; international NGOs, we have reached thousands of vulnerable households in remote and climate-affected areas.</p>",
+            "<p><strong>Health &amp; Nutrition —</strong> Community-based interventions for women, children, and adolescents, including awareness on maternal and child health, immunization, hygiene, and nutrition counselling to reduce malnutrition.</p>",
+            "<p><strong>Water, Sanitation &amp; Hygiene (WaSH) —</strong> Safe drinking water, hygienic latrines, and handwashing facilities in schools and communities, alongside awareness on menstrual hygiene and water safety.</p>",
+            "<p><strong>Disaster Risk Reduction &amp; Climate Change —</strong> Disaster preparedness, early-warning awareness, and climate-smart agriculture to strengthen the resilience of cyclone- and flood-prone coastal communities.</p>",
+            "<p><strong>Agriculture, Food Security &amp; Livelihood —</strong> Training in modern farming, homestead gardening, poultry and livestock rearing, and income-generating skills for women and youth to improve household income.</p>",
+            "<p><strong>Education &amp; Capacity Building —</strong> Improving access to education for disadvantaged children and building the capacity of community groups, youth leaders, and women's groups for sustainable development.</p>",
+            "<p><strong>Eye Care, HIV/AIDS Awareness &amp; Women Empowerment —</strong> Free eye camps, behaviour-change communication, and programs promoting gender equality, prevention of child marriage, and women's participation in decision-making.</p>",
+            "<p>Over the years, AROHI has played a significant role in improving the lives of disadvantaged and climate-vulnerable communities in the Barisal Division. We remain committed to building a healthy, educated, resilient, and self-reliant society where every individual has equal opportunities for growth and dignity.</p>",
+          ].join(""),
+        },
+      },
+      {
+        key: "impact_stories",
+        value: [
+          {
+            image: "",
+            quote:
+              "When the mobile eye camp came to our area, the doctors found my cataract early. After the free surgery I can see my grandchildren again. AROHI gave me back my sight and my independence.",
+            name: "Rahima Khatun",
+            designation: "Eye Camp Beneficiary, Mehendiganj",
+          },
+          {
+            image: "",
+            quote:
+              "The livelihood training taught me tailoring and how to run a small business. I now earn enough to support my children's education and stand on my own feet with dignity.",
+            name: "Shahnaz Parvin",
+            designation: "Livelihood Program Graduate, Barisal Sadar",
+          },
+          {
+            image: "",
+            quote:
+              "Through AROHI's nutrition counselling I learned about balanced diets and breastfeeding. My youngest child is now healthy and growing well — knowledge that changed our whole family.",
+            name: "Mosammat Fatema",
+            designation: "Health & Nutrition Beneficiary, Bhola Sadar",
+          },
         ],
       },
     ];
@@ -474,6 +520,267 @@ export async function GET() {
       results.sectors = `Created ${sectorsToSeed.length} sectors`;
     } else {
       results.sectors = `${existingSectorCount} sectors already exist — skipped`;
+    }
+
+    // ─── 3a. Backfill programme long descriptions (sourced from AROHI docs) ──
+    // Only fills programmes that don't already have a longDescription, so admin
+    // edits are never overwritten.
+    const programmeLongDescriptions: Record<string, string> = {
+      health:
+        "<p>AROHI delivers community-based health interventions to improve the overall health status of women, children, adolescents, and vulnerable populations across Barisal Division. Through health camps and awareness sessions on maternal and child health, immunization, reproductive health, and disease prevention, the organization brings essential primary healthcare to underserved rural unions and urban slums.</p><p>Community health workers and volunteers organize courtyard meetings, growth-monitoring activities, and awareness campaigns, while specialized initiatives such as free eye camps and HIV/AIDS prevention extend care to the most marginalized. These efforts ensure that even the hardest-to-reach families receive medical attention, early diagnosis, and the knowledge to live healthier lives.</p>",
+      nutrition:
+        "<p>AROHI's nutrition programme focuses on reducing malnutrition among under-five children, pregnant women, and lactating mothers in Barisal District. Trained health workers carry out community-based screening and growth monitoring, identify malnourished children early, and provide supplementary feeding and referral support for severe cases.</p><p>A strong emphasis on Behaviour Change Communication helps mothers and caregivers adopt exclusive breastfeeding, timely complementary feeding, dietary diversity, and improved hygiene. By building the capacity of community health workers and engaging local leaders, AROHI ensures these gains in nutritional knowledge and practice are sustained at the household level.</p>",
+      education:
+        "<p>Education is one of AROHI's key focus areas. The organization improves access to learning for disadvantaged children, school dropouts, and vulnerable adolescents through child-friendly community learning centres, early childhood development activities, and bridge education that helps out-of-school children return to formal schooling.</p><p>Alongside direct education support, AROHI conducts capacity-building training for community groups, youth leaders, women's groups, and volunteers on leadership, rights awareness, social accountability, and livelihood development. Together these activities raise enrolment, reduce dropout rates, and empower communities to drive their own sustainable development.</p>",
+      wash:
+        "<p>Safe water and sanitation remain a major concern in many coastal and rural communities of Barisal Division. AROHI's WaSH programme ensures access to safe drinking water, hygienic sanitation facilities, and improved hygiene behaviour by installing and rehabilitating tube wells, sanitary latrines, and handwashing stations in schools and communities.</p><p>Regular awareness sessions on handwashing, menstrual hygiene management, safe water storage, and waste management — supported by active Community WaSH Committees — drive lasting behaviour change. These interventions have significantly reduced waterborne diseases and improved public-health conditions in targeted communities.</p>",
+      "food-security-and-livelihood":
+        "<p>To improve food security and economic resilience, AROHI supports vulnerable households through sustainable agriculture and livelihood development. Farmers receive training in modern and organic farming, homestead gardening, poultry rearing, livestock management, and fisheries, while women and youth gain skills for income-generating activities and small businesses.</p><p>Through programmes such as Vulnerable Group Development and micro-enterprise promotion — alongside AROHI Agro Business — the organization links producers to fair markets and steady income. These interventions contribute directly to poverty reduction, higher household income, and improved food security among disadvantaged communities.</p>",
+      drr:
+        "<p>The coastal region of Barisal Division is highly vulnerable to cyclones, floods, tidal surges, and river erosion. AROHI strengthens community resilience through community-based disaster risk reduction — early-warning awareness, emergency preparedness training, evacuation planning, and the formation of local disaster management committees.</p><p>Community members are trained in first aid, emergency response, and risk-mitigation strategies, and AROHI supports post-disaster rehabilitation for families affected by natural disasters. By building local preparedness and coordinating with government agencies, the programme reduces vulnerability and helps communities recover faster.</p>",
+      "climate-change":
+        "<p>As one of Bangladesh's most climate-vulnerable regions, Barisal Division faces salinity intrusion, irregular rainfall, flooding, and erosion. AROHI promotes climate justice and resilience through awareness campaigns, climate-smart agriculture, tree plantation, and environmental conservation that help communities adapt to a changing environment.</p><p>The organization supports salt-tolerant and floating-garden cultivation, rainwater harvesting, climate-resilient sanitation, and diversified livelihoods, while engaging women and youth in disaster-preparedness committees. These integrated efforts build safer, stronger, and more sustainable coastal communities.</p>",
+      protection:
+        "<p>AROHI safeguards the rights and dignity of the most marginalized — persons with disabilities, women, children, and vulnerable groups. The organization promotes disability-inclusive local governance, distributes assistive devices, supports inclusive education and rehabilitation, and provides legal aid and awareness on human rights, women's rights, and child rights.</p><p>Through gender-equality campaigns, prevention of child marriage and violence against women, and community mobilization, AROHI encourages women's participation in decision-making and economic life. These initiatives reduce stigma and discrimination and help build an inclusive society where everyone can live with equality and opportunity.</p>",
+      agriculture:
+        "<p>AROHI modernizes agricultural practices and strengthens rural livelihoods through AROHI Agro Business (AAB), established in 2015. Farmers receive training in modern and eco-friendly cultivation, quality inputs, and post-harvest management, with guaranteed market access through contract farming for mung bean, rice, milk, and handmade puffed rice.</p><p>By processing and branding products such as mung dal, frozen milk, and puffed rice — and building the capacity of ICM/IPM clubs with the Department of Agriculture — AROHI eliminates middlemen, secures fair prices for farmers, and supplies safe, high-quality produce to consumers across Barisal and beyond.</p>",
+    };
+
+    let descBackfilled = 0;
+    for (const [slug, longDescription] of Object.entries(programmeLongDescriptions)) {
+      const r = await Sector.updateOne(
+        { slug, $or: [{ longDescription: { $exists: false } }, { longDescription: "" }, { longDescription: null }] },
+        { $set: { longDescription } }
+      );
+      descBackfilled += r.modifiedCount;
+    }
+    results.programmeDescriptions = `Backfilled ${descBackfilled} programme descriptions`;
+
+    // ─── 3b. Seed Sub-Programmes ────────────────────────────────────────
+    // Sub-programmes belong to a parent Sector. Content sourced from AROHI's
+    // programme reports. Defined by parentSlug; the parent _id is resolved
+    // from the DB so this works whether sectors were just seeded or pre-exist.
+
+    const subProgrammesToSeed = [
+      {
+        parentSlug: "health",
+        name: "Health Camp Activities",
+        slug: "health-camp",
+        icon: "HiHeart",
+        order: 1,
+        description:
+          "Free community health camps bringing primary healthcare, screening, and medicines to underserved rural unions and urban slums across Barisal.",
+        longDescription:
+          "<p>AROHI organizes health camps across Barisal district, sub-districts (Upazilas), union parishads, and urban areas under Barisal City Corporation. These camps serve as a bridge between underserved populations and essential healthcare services, ensuring even the most vulnerable groups receive basic medical attention.</p><p>Services include general health check-ups, blood pressure and diabetes screening, maternal and child health advice, free or subsidized medicine distribution, and awareness on hygiene, nutrition, and disease prevention. Strong community mobilization through local volunteers and leaders ensures high participation and lasting behavioural change.</p>",
+        stats: [
+          { label: "Health Camps Conducted", value: "200+", icon: "Hospital" },
+          { label: "Beneficiaries Served", value: "15,000+", icon: "Users" },
+          { label: "Upazilas Covered", value: "5+", icon: "MapPin" },
+        ],
+        achievements: [
+          "Improved healthcare access for people in remote unions without long travel",
+          "Early detection of hypertension and diabetes through routine screening",
+          "Reduced financial burden on low-income families via free services",
+          "Increased community awareness on hygiene, nutrition, and disease prevention",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "health",
+        name: "Eye Camp Program",
+        slug: "eye-camp",
+        icon: "HiHeart",
+        order: 2,
+        description:
+          "Free eye screening, treatment, spectacles, and cataract referrals for vulnerable communities, with the support of Ispahani Islamia Eye Institute & Hospital.",
+        longDescription:
+          "<p>AROHI implements the Eye Camp Program across districts and sub-districts of Barisal Division with the support of Ispahani Islamia Eye Institute and Hospital. The program improves access to eye care for poor, vulnerable, and underserved communities — especially the elderly, children, women, and day labourers who suffer from untreated eye problems.</p><p>Qualified eye specialists conduct comprehensive examinations including vision testing, disease screening, and cataract identification. Beneficiaries receive free or low-cost spectacles, essential medicines, and referral support for advanced treatment and surgery. Special school eye-health sessions identify vision problems among children early.</p>",
+        stats: [
+          { label: "Patients Screened", value: "5,000+", icon: "Eye" },
+          { label: "Spectacles Distributed", value: "2,000+", icon: "Glasses" },
+          { label: "Cataract Referrals", value: "800+", icon: "Heart" },
+        ],
+        achievements: [
+          "Increased access to eye care for poor and vulnerable people",
+          "Early detection and treatment of common eye diseases",
+          "Reduced avoidable blindness through cataract referrals and surgeries",
+          "Improved educational participation among children with corrected vision",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "health",
+        name: "Tobacco Control Program",
+        slug: "tobacco-control",
+        icon: "HiHeart",
+        order: 3,
+        description:
+          "Reducing tobacco consumption and promoting smoke-free communities in Barisal through awareness, school campaigns, and advocacy — with WBB Trust and Gram Bangla.",
+        longDescription:
+          "<p>AROHI implements the Tobacco Control Program in Barisal district with the support of WBB Trust and Gram Bangla. The program reduces tobacco consumption, raises awareness of its harmful effects, and protects vulnerable groups — youth, women, school students, and low-income families — from the social, economic, and health impacts of tobacco.</p><p>Activities include community awareness sessions, school and youth campaigns, observation of World No Tobacco Day, advocacy with local government and law enforcement for smoke-free public places, and distribution of IEC materials such as leaflets, posters, and stickers.</p>",
+        stats: [
+          { label: "Awareness Sessions", value: "150+", icon: "Megaphone" },
+          { label: "Schools Engaged", value: "40+", icon: "School" },
+          { label: "Smoke-free Pledges", value: "1,000+", icon: "Users" },
+        ],
+        achievements: [
+          "Increased awareness of the health and economic impacts of tobacco",
+          "Greater youth and volunteer participation in anti-tobacco campaigns",
+          "Improved understanding of tobacco control laws among local stakeholders",
+          "Encouraged smoke-free environments in schools and public places",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "nutrition",
+        name: "Community Nutrition Program",
+        slug: "community-nutrition",
+        icon: "HiCake",
+        order: 1,
+        description:
+          "Improving the nutritional status of under-five children and pregnant & lactating mothers through screening, supplementary feeding, and behaviour-change counselling.",
+        longDescription:
+          "<p>AROHI's Nutrition Program targets children under five and pregnant and lactating mothers (PLW) in Barisal District. Trained health workers conduct household screening using MUAC tapes and growth monitoring to identify malnutrition early, enrolling affected children in appropriate support services.</p><p>The program provides supplementary food and micronutrient powders, refers severe cases to health facilities, and places strong emphasis on Behaviour Change Communication — educating mothers on exclusive breastfeeding, complementary feeding, dietary diversity, and hygiene. Community health workers and volunteers are trained to ensure services remain sustainable.</p>",
+        stats: [
+          { label: "Children Screened", value: "8,000+", icon: "Baby" },
+          { label: "Mothers Counselled", value: "3,000+", icon: "Heart" },
+          { label: "Volunteers Trained", value: "120+", icon: "Users" },
+        ],
+        achievements: [
+          "Early identification and treatment of malnutrition among under-fives",
+          "Increased exclusive breastfeeding and improved complementary feeding rates",
+          "Strengthened capacity of community health workers for lasting impact",
+          "Measurable reduction in child malnutrition in target communities",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "education",
+        name: "Early Childhood Development & Dropout Support",
+        slug: "ecd-dropout-support",
+        icon: "HiAcademicCap",
+        order: 1,
+        description:
+          "Child-friendly early learning for ages 3–6 and bridge education to bring dropout children back to school, reducing child labour and early marriage.",
+        longDescription:
+          "<p>AROHI's Education Project focuses on Early Childhood Development (ECD) and support for dropout children in Barisal, in partnership with the Government and national & international NGOs. Child-friendly learning centres offer interactive sessions — storytelling, drawing, games, and basic literacy and numeracy — using child-centred methods that build confidence.</p><p>For dropout children, the project provides non-formal education, bridge courses, and counselling with parents to reintegrate them into formal schools, with special attention to children from poor families, children with disabilities, and those at risk of child labour or early marriage. Teachers and community volunteers are trained in child protection and positive parenting.</p>",
+        stats: [
+          { label: "Children Enrolled", value: "1,200+", icon: "Users" },
+          { label: "Learning Centres", value: "25+", icon: "School" },
+          { label: "Dropouts Reintegrated", value: "400+", icon: "Award" },
+        ],
+        achievements: [
+          "Many children successfully enrolled in ECD centres and primary schools",
+          "Dropout children returned to education with positive academic improvement",
+          "Increased parental awareness of education, hygiene, and child protection",
+          "Stronger community participation in supporting children's education",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "wash",
+        name: "Safe Water & Sanitation Program",
+        slug: "safe-water-sanitation",
+        icon: "HiBeaker",
+        order: 1,
+        description:
+          "Improving public health through safe drinking water, improved sanitation, and hygiene promotion in rural and hard-to-reach communities of Barisal.",
+        longDescription:
+          "<p>AROHI's Water, Sanitation and Hygiene (WaSH) program in Barisal District improves public health, reduces waterborne diseases, and ensures access to safe drinking water and improved sanitation. The program promotes hygiene practices among households, schools, and vulnerable communities in both rural and hard-to-reach areas.</p><p>Activities include installation and rehabilitation of tube wells and safe water points, construction of household and community latrines, formation of Community WaSH Committees, hygiene promotion in schools, and distribution of hygiene kits with soap, sanitary materials, and water purification tablets.</p>",
+        stats: [
+          { label: "Water Points", value: "300+", icon: "Droplet" },
+          { label: "Latrines Built", value: "1,500+", icon: "Building" },
+          { label: "People Reached", value: "20,000+", icon: "Users" },
+        ],
+        achievements: [
+          "Increased access to safe and functional water sources",
+          "Improved sanitation coverage and reduced open defecation",
+          "Behaviour change on handwashing and hygiene practices",
+          "Active community participation in maintaining WaSH facilities",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "climate-change",
+        name: "Building Resilience Against Climate Change",
+        slug: "climate-resilience",
+        icon: "HiGlobeAlt",
+        order: 1,
+        description:
+          "Strengthening the resilience of climate-vulnerable coastal communities through disaster preparedness, climate-smart livelihoods, and environmental protection.",
+        longDescription:
+          "<p>AROHI implements the \"Building Resilience Against Climate Change\" program in Barisal Division — one of Bangladesh's most climate-vulnerable regions — with support from the Government and national & international NGOs. It strengthens the adaptive capacity of communities affected by cyclones, tidal surges, river erosion, flooding, salinity intrusion, and irregular rainfall.</p><p>The program promotes climate-smart agriculture (salt-tolerant crops, floating gardens, homestead gardening), supports alternative income activities, conducts tree-plantation and environmental conservation drives, forms community disaster management committees with mock drills, and provides climate-resilient WaSH support including rainwater harvesting and raised latrines.</p>",
+        stats: [
+          { label: "Communities Engaged", value: "50+", icon: "Users" },
+          { label: "Trees Planted", value: "10,000+", icon: "TreePine" },
+          { label: "Households Supported", value: "3,000+", icon: "Home" },
+        ],
+        achievements: [
+          "Increased community awareness and preparedness for climate disasters",
+          "Wider adoption of climate-smart agricultural practices",
+          "Diversified livelihoods and increased household income",
+          "Stronger community disaster response and coordination mechanisms",
+        ],
+        gallery: [],
+      },
+      {
+        parentSlug: "protection",
+        name: "Disability Support & Rehabilitation",
+        slug: "disability-support",
+        icon: "HiShieldCheck",
+        order: 1,
+        description:
+          "Promoting the rights, dignity, and self-reliance of persons with disabilities through rehabilitation, assistive devices, inclusive education, and livelihoods.",
+        longDescription:
+          "<p>AROHI implements the Disability Support & Rehabilitation Program with the support of the Bangladesh Government to improve the quality of life, dignity, inclusion, and self-reliance of persons with disabilities across Barisal Division. Using a rights-based and inclusive approach, the program reduces social stigma and promotes equal opportunity.</p><p>Activities include community-based identification and registration, medical support and physiotherapy, distribution of assistive devices (wheelchairs, hearing aids, white canes, artificial limbs), inclusive education support, livelihood and skills training (tailoring, handicrafts, poultry, small business), and awareness campaigns including observation of the International Day of Persons with Disabilities.</p>",
+        stats: [
+          { label: "PWD Supported", value: "2,000+", icon: "Heart" },
+          { label: "Assistive Devices", value: "800+", icon: "Wheelchair" },
+          { label: "Awareness Sessions", value: "300+", icon: "Megaphone" },
+        ],
+        achievements: [
+          "Increased access to rehabilitation and healthcare services",
+          "Improved mobility and independence through assistive devices",
+          "Enhanced school participation of children with disabilities",
+          "Reduced social stigma and discrimination in communities",
+        ],
+        gallery: [],
+      },
+    ];
+
+    const existingSubCount = await SubProgramme.countDocuments();
+    if (existingSubCount === 0) {
+      // 1. Create the standalone sub-programmes (drop the `parentSlug` helper —
+      //    it only records which programme to assign each one to).
+      const created = await SubProgramme.insertMany(
+        subProgrammesToSeed.map(({ parentSlug, ...rest }) => {
+          void parentSlug;
+          return rest;
+        })
+      );
+      const subIdBySlug = new Map(created.map((s) => [s.slug, s._id]));
+
+      // 2. Group the created ids by their target programme.
+      const assignByParent: Record<string, unknown[]> = {};
+      for (const sp of subProgrammesToSeed) {
+        const id = subIdBySlug.get(sp.slug);
+        if (!id) continue;
+        (assignByParent[sp.parentSlug] ??= []).push(id);
+      }
+
+      // 3. Assign them to each programme in order.
+      let assignedCount = 0;
+      for (const [pSlug, ids] of Object.entries(assignByParent)) {
+        const r = await Sector.updateOne(
+          { slug: pSlug },
+          { $set: { subProgrammes: ids } }
+        );
+        if (r.matchedCount > 0) assignedCount += ids.length;
+      }
+
+      results.subProgrammes = `Created ${created.length} sub-programmes, assigned ${assignedCount} to programmes`;
+    } else {
+      results.subProgrammes = `${existingSubCount} sub-programmes already exist — skipped`;
     }
 
     // ─── 4. Seed News ──────────────────────────────────────────────────

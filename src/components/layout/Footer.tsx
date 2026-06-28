@@ -10,19 +10,19 @@ import { HiLocationMarker, HiMail, HiPhone } from "react-icons/hi";
 const quickLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Sectors", href: "/sectors" },
+  { label: "Our Programmes", href: "/programmes" },
   { label: "News", href: "/news" },
   { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/contact" },
 ];
 
 const programs = [
-  { label: "Health", href: "/sectors/health" },
-  { label: "Education", href: "/sectors/education" },
-  { label: "WaSH", href: "/sectors/wash" },
-  { label: "Agriculture", href: "/sectors/agriculture" },
-  { label: "Protection", href: "/sectors/protection" },
-  { label: "DRR", href: "/sectors/drr" },
+  { label: "Health", href: "/programmes/health" },
+  { label: "Education", href: "/programmes/education" },
+  { label: "WaSH", href: "/programmes/wash" },
+  { label: "Agriculture", href: "/programmes/agriculture" },
+  { label: "Protection", href: "/programmes/protection" },
+  { label: "DRR", href: "/programmes/drr" },
 ];
 
 const socials = [

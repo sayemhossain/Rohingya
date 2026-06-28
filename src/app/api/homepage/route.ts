@@ -9,14 +9,23 @@ import SiteSettings from "@/models/SiteSettings";
 export async function GET() {
   try {
     await connectDB();
-    const [news, sectors, heroSlidesDoc, statsDoc, partnerLogosDoc] =
-      await Promise.all([
-        News.find({ published: true }).sort({ createdAt: -1 }).limit(3).lean(),
-        Sector.find({}).sort({ order: 1 }).lean(),
-        SiteSettings.findOne({ key: "hero_slides" }).lean(),
-        SiteSettings.findOne({ key: "stats" }).lean(),
-        SiteSettings.findOne({ key: "partner_logos" }).lean(),
-      ]);
+    const [
+      news,
+      sectors,
+      heroSlidesDoc,
+      statsDoc,
+      partnerLogosDoc,
+      journeyDoc,
+      impactStoriesDoc,
+    ] = await Promise.all([
+      News.find({ published: true }).sort({ createdAt: -1 }).limit(3).lean(),
+      Sector.find({ showOnHomepage: { $ne: false } }).sort({ order: 1 }).lean(),
+      SiteSettings.findOne({ key: "hero_slides" }).lean(),
+      SiteSettings.findOne({ key: "stats" }).lean(),
+      SiteSettings.findOne({ key: "partner_logos" }).lean(),
+      SiteSettings.findOne({ key: "home_journey" }).lean(),
+      SiteSettings.findOne({ key: "impact_stories" }).lean(),
+    ]);
 
     return NextResponse.json({
       success: true,
@@ -26,6 +35,8 @@ export async function GET() {
         heroSlides: heroSlidesDoc?.value || null,
         stats: statsDoc?.value || null,
         partnerLogos: partnerLogosDoc?.value || null,
+        journey: journeyDoc?.value || null,
+        impactStories: impactStoriesDoc?.value || null,
       },
     });
   } catch (error) {

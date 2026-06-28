@@ -1,31 +1,31 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import {
   HiPlus,
   HiPencil,
   HiTrash,
   HiSearch,
-  HiX,
-  HiChevronUp,
   HiPhotograph,
+  HiViewGrid,
+  HiCollection,
+  HiEye,
+  HiEyeOff,
+  HiChevronDown,
+  HiExternalLink,
 } from "react-icons/hi";
-import RichTextEditor from "@/components/admin/RichTextEditor";
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
-interface SectorStat {
-  label: string;
-  value: string;
-  icon: string;
-}
-
-interface SectorProgram {
-  title: string;
+interface SubProgramme {
+  _id: string;
+  name: string;
+  slug: string;
   description: string;
+  image?: string;
+  order: number;
+  published?: boolean;
 }
 
 interface Sector {
@@ -33,737 +33,316 @@ interface Sector {
   name: string;
   slug: string;
   description: string;
-  longDescription: string;
-  icon: string;
-  image: string;
-  stats: SectorStat[];
-  programs: SectorProgram[];
-  achievements: string[];
+  image?: string;
   order: number;
+  subProgrammes?: string[];
+  showOnHomepage?: boolean;
 }
 
-const emptySector: Omit<Sector, "_id"> = {
-  name: "",
-  slug: "",
-  description: "",
-  longDescription: "",
-  icon: "",
-  image: "",
-  stats: [],
-  programs: [],
-  achievements: [],
-  order: 0,
-};
+type Msg = { type: "success" | "error"; text: string } | null;
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
+function ProgrammesInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tab = searchParams.get("tab") === "subprogrammes" ? "subprogrammes" : "programmes";
 
-function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
-
-export default function AdminSectorsPage() {
   const [sectors, setSectors] = useState<Sector[]>([]);
+  const [subs, setSubs] = useState<SubProgramme[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [poolSearch, setPoolSearch] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [message, setMessage] = useState<Msg>(null);
 
-  // Form state
-  const [editingSlug, setEditingSlug] = useState<string | null>(null); // slug of sector being edited, or "__new__" for add
-  const [form, setForm] = useState<Omit<Sector, "_id">>(emptySector);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-
-  /* ---------- Fetch sectors ---------- */
-  const fetchSectors = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sectors");
-      const json = await res.json();
-      setSectors(json.data ?? []);
-    } catch (err) {
-      console.error("Failed to fetch sectors:", err);
+      const [secRes, subRes] = await Promise.all([
+        fetch("/api/sectors"),
+        fetch("/api/subprogrammes?all=1"),
+      ]);
+      const secJson = await secRes.json();
+      const subJson = await subRes.json();
+      setSectors(secJson.data ?? []);
+      setSubs(subJson.data ?? []);
+    } catch {
+      setMessage({ type: "error", text: "Failed to load data." });
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchSectors();
   }, []);
 
-  /* ---------- Message auto-dismiss ---------- */
+  useEffect(() => { load(); }, [load]);
+
   useEffect(() => {
     if (!message) return;
     const t = setTimeout(() => setMessage(null), 4000);
     return () => clearTimeout(t);
   }, [message]);
 
-  /* ---------- Open / Close form ---------- */
-  const openAddForm = () => {
-    setEditingSlug("__new__");
-    setForm({ ...emptySector, order: sectors.length });
-    setMessage(null);
-  };
+  const setTab = (t: "programmes" | "subprogrammes") =>
+    router.replace(`/admin/sectors?tab=${t}`);
 
-  const openEditForm = (sector: Sector) => {
-    setEditingSlug(sector.slug);
-    setForm({
-      name: sector.name,
-      slug: sector.slug,
-      description: sector.description,
-      longDescription: sector.longDescription ?? "",
-      icon: sector.icon ?? "",
-      image: sector.image ?? "",
-      stats: sector.stats?.length ? sector.stats : [],
-      programs: sector.programs?.length ? sector.programs : [],
-      achievements: sector.achievements?.length ? sector.achievements : [],
-      order: sector.order ?? 0,
-    });
-    setMessage(null);
-  };
-
-  const closeForm = () => {
-    setEditingSlug(null);
-    setForm(emptySector);
-  };
-
-  /* ---------- Form field handlers ---------- */
-  const updateField = (
-    field: keyof Omit<Sector, "_id">,
-    value: string | number
-  ) => {
-    setForm((prev) => {
-      const next = { ...prev, [field]: value };
-      // Auto-generate slug from name when adding new
-      if (field === "name" && editingSlug === "__new__") {
-        next.slug = slugify(value as string);
-      }
-      return next;
-    });
-  };
-
-  /* -- Stats -- */
-  const addStat = () =>
-    setForm((p) => ({
-      ...p,
-      stats: [...p.stats, { label: "", value: "", icon: "" }],
-    }));
-
-  const removeStat = (i: number) =>
-    setForm((p) => ({ ...p, stats: p.stats.filter((_, idx) => idx !== i) }));
-
-  const updateStat = (i: number, field: keyof SectorStat, value: string) =>
-    setForm((p) => ({
-      ...p,
-      stats: p.stats.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)),
-    }));
-
-  /* -- Programs -- */
-  const addProgram = () =>
-    setForm((p) => ({
-      ...p,
-      programs: [...p.programs, { title: "", description: "" }],
-    }));
-
-  const removeProgram = (i: number) =>
-    setForm((p) => ({
-      ...p,
-      programs: p.programs.filter((_, idx) => idx !== i),
-    }));
-
-  const updateProgram = (
-    i: number,
-    field: keyof SectorProgram,
-    value: string
-  ) =>
-    setForm((p) => ({
-      ...p,
-      programs: p.programs.map((pr, idx) =>
-        idx === i ? { ...pr, [field]: value } : pr
-      ),
-    }));
-
-  /* -- Achievements -- */
-  const addAchievement = () =>
-    setForm((p) => ({ ...p, achievements: [...p.achievements, ""] }));
-
-  const removeAchievement = (i: number) =>
-    setForm((p) => ({
-      ...p,
-      achievements: p.achievements.filter((_, idx) => idx !== i),
-    }));
-
-  const updateAchievement = (i: number, value: string) =>
-    setForm((p) => ({
-      ...p,
-      achievements: p.achievements.map((a, idx) => (idx === i ? value : a)),
-    }));
-
-  /* ---------- Image upload ---------- */
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-
-      const json = await res.json();
-      setForm((p) => ({ ...p, image: json.url ?? json.data?.url ?? "" }));
-    } catch (err) {
-      console.error("Upload error:", err);
-      setMessage({ type: "error", text: "Image upload failed." });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  /* ---------- Save ---------- */
-  const handleSave = async () => {
-    if (!form.name.trim() || !form.slug.trim() || !form.description.trim()) {
-      setMessage({
-        type: "error",
-        text: "Name, slug, and description are required.",
-      });
-      return;
-    }
-
-    setSaving(true);
-    setMessage(null);
-
-    try {
-      const isNew = editingSlug === "__new__";
-      const url = isNew ? "/api/sectors" : `/api/sectors/${editingSlug}`;
-      const method = isNew ? "POST" : "PUT";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error ?? "Save failed");
-      }
-
-      setMessage({
-        type: "success",
-        text: isNew
-          ? "Sector created successfully!"
-          : "Sector updated successfully!",
-      });
-      closeForm();
-      fetchSectors();
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Failed to save sector.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  /* ---------- Delete ---------- */
-  const handleDelete = async (slug: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${name}"?`)) return;
-
+  const deleteProgramme = async (slug: string, name: string) => {
+    if (!window.confirm(`Delete programme "${name}"?`)) return;
     try {
       const res = await fetch(`/api/sectors/${slug}`, { method: "DELETE" });
-      if (res.ok) {
-        if (editingSlug === slug) closeForm();
-        fetchSectors();
-        setMessage({ type: "success", text: "Sector deleted." });
-      } else {
-        setMessage({ type: "error", text: "Failed to delete sector." });
-      }
-    } catch {
-      setMessage({ type: "error", text: "Failed to delete sector." });
-    }
+      if (res.ok) { load(); setMessage({ type: "success", text: "Programme deleted." }); }
+      else setMessage({ type: "error", text: "Failed to delete programme." });
+    } catch { setMessage({ type: "error", text: "Failed to delete programme." }); }
   };
 
-  /* ---------- Filtered list ---------- */
-  const filtered = sectors.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const deleteSub = async (id: string, name: string) => {
+    if (!window.confirm(`Delete sub-programme "${name}"? It will be removed from any programmes it is assigned to.`)) return;
+    try {
+      const res = await fetch(`/api/subprogrammes/${id}`, { method: "DELETE" });
+      if (res.ok) { load(); setMessage({ type: "success", text: "Sub-programme deleted." }); }
+      else setMessage({ type: "error", text: "Failed to delete." });
+    } catch { setMessage({ type: "error", text: "Failed to delete." }); }
+  };
 
-  /* ---------------------------------------------------------------- */
-  /*  Render                                                           */
-  /* ---------------------------------------------------------------- */
-
-  const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand";
-
-  const labelClass = "mb-1 block text-sm font-medium text-gray-700";
+  const subById = new Map(subs.map((s) => [s._id, s]));
+  const filteredSectors = sectors.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredSubs = subs.filter((s) => s.name.toLowerCase().includes(poolSearch.toLowerCase()));
+  const onHomeCount = sectors.filter((s) => s.showOnHomepage !== false).length;
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
-            <HiPhotograph className="h-5 w-5 text-brand" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Manage Sectors
-            </h1>
-            <p className="text-sm text-gray-500">
-              {sectors.length} sector{sectors.length !== 1 ? "s" : ""} total
-            </p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-accent text-white shadow-sm">
+          <HiViewGrid className="h-5 w-5" />
         </div>
-        <button
-          onClick={openAddForm}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand/90"
-        >
-          <HiPlus className="h-4 w-4" />
-          Add Sector
-        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Our Programmes</h1>
+          <p className="text-sm text-gray-500">
+            {sectors.length} programmes · {onHomeCount} on homepage · {subs.length} sub-programmes in pool
+          </p>
+        </div>
       </div>
 
-      {/* Global message */}
       {message && (
-        <div
-          className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
+        <div className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success" ? "border-green-200 bg-green-50 text-green-700" : "border-red-200 bg-red-50 text-red-700"}`}>
           {message.text}
         </div>
       )}
 
-      {/* Search */}
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <HiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search sectors..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
-        </div>
+      {/* Tabs */}
+      <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm sm:w-fit">
+        <button
+          onClick={() => setTab("programmes")}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
+            tab === "programmes" ? "bg-brand text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          <HiViewGrid className="h-4 w-4" /> Programmes
+          <span className={`rounded-full px-1.5 text-[11px] ${tab === "programmes" ? "bg-white/20" : "bg-gray-100"}`}>{sectors.length}</span>
+        </button>
+        <button
+          onClick={() => setTab("subprogrammes")}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
+            tab === "subprogrammes" ? "bg-brand text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          <HiCollection className="h-4 w-4" /> Sub-programmes
+          <span className={`rounded-full px-1.5 text-[11px] ${tab === "subprogrammes" ? "bg-white/20" : "bg-gray-100"}`}>{subs.length}</span>
+        </button>
       </div>
 
-      {/* ============================================================ */}
-      {/*  ADD / EDIT FORM (shown above the list when active)          */}
-      {/* ============================================================ */}
-      {editingSlug && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {editingSlug === "__new__" ? "Add New Sector" : "Edit Sector"}
-            </h2>
-            <button
-              onClick={closeForm}
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-            >
-              <HiX className="h-5 w-5" />
-            </button>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+        </div>
+      ) : tab === "programmes" ? (
+        /* ============ PROGRAMMES TAB ============ */
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <HiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search programmes..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              />
+            </div>
+            <Link href="/admin/sectors/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand/90">
+              <HiPlus className="h-4 w-4" /> Add Programme
+            </Link>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            {/* Name */}
-            <div>
-              <label className={labelClass}>Name *</label>
-              <input
-                className={inputClass}
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                placeholder="e.g. Education"
-              />
+          {filteredSectors.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
+              <HiPhotograph className="mx-auto h-10 w-10 text-gray-300" />
+              <p className="mt-2 text-sm text-gray-500">{search ? "No programmes match your search." : "No programmes yet."}</p>
             </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredSectors.map((sector) => {
+                const assigned = (sector.subProgrammes ?? []).map((id) => subById.get(id)).filter(Boolean) as SubProgramme[];
+                const isOpen = expanded === sector._id;
+                return (
+                  <div key={sector._id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div className="flex gap-4 p-4">
+                      {sector.image ? (
+                        <Image src={sector.image} alt={sector.name} width={72} height={72} className="h-[72px] w-[72px] flex-shrink-0 rounded-xl border border-gray-100 object-cover" />
+                      ) : (
+                        <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/10 to-brand-accent/10 text-brand">
+                          <HiPhotograph className="h-6 w-6" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="truncate text-sm font-semibold text-gray-900">{sector.name}</h3>
+                          <span className="flex-shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">/{sector.slug}</span>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500">{sector.description}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {sector.showOnHomepage === false ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500"><HiEyeOff className="h-3 w-3" /> Hidden</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-600"><HiEye className="h-3 w-3" /> On homepage</span>
+                          )}
+                          <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">{assigned.length} sub-programmes</span>
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">Order: {sector.order}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-shrink-0 flex-col items-end gap-1">
+                        <Link href={`/admin/sectors/edit/${sector.slug}`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-brand/10 hover:text-brand">
+                          <HiPencil className="h-4 w-4" /> Edit
+                        </Link>
+                        <button onClick={() => deleteProgramme(sector.slug, sector.name)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600">
+                          <HiTrash className="h-4 w-4" /> Delete
+                        </button>
+                      </div>
+                    </div>
 
-            {/* Slug */}
-            <div>
-              <label className={labelClass}>Slug *</label>
-              <input
-                className={inputClass}
-                value={form.slug}
-                onChange={(e) => updateField("slug", e.target.value)}
-                placeholder="auto-generated-from-name"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="sm:col-span-2">
-              <label className={labelClass}>Short Description *</label>
-              <textarea
-                className={inputClass}
-                rows={2}
-                value={form.description}
-                onChange={(e) => updateField("description", e.target.value)}
-                placeholder="Brief description shown on cards..."
-              />
-            </div>
-
-            {/* Long Description */}
-            <div className="sm:col-span-2">
-              <label className={labelClass}>Long Description</label>
-              <RichTextEditor
-                value={form.longDescription}
-                onChange={(val) => updateField("longDescription", val)}
-                placeholder="Detailed description for the sector detail page..."
-              />
-            </div>
-
-            {/* Icon */}
-            <div>
-              <label className={labelClass}>Icon Name</label>
-              <input
-                className={inputClass}
-                value={form.icon}
-                onChange={(e) => updateField("icon", e.target.value)}
-                placeholder="e.g. HiAcademicCap"
-              />
-            </div>
-
-            {/* Order */}
-            <div>
-              <label className={labelClass}>Display Order</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={form.order}
-                onChange={(e) =>
-                  updateField("order", parseInt(e.target.value) || 0)
-                }
-              />
-            </div>
-
-            {/* Image */}
-            <div className="sm:col-span-2">
-              <label className={labelClass}>Image</label>
-              <div className="flex items-center gap-3">
-                <input
-                  className={inputClass}
-                  value={form.image}
-                  onChange={(e) => updateField("image", e.target.value)}
-                  placeholder="Image URL or upload below"
-                />
-                <label className="flex-shrink-0 cursor-pointer rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50">
-                  {uploading ? "Uploading..." : "Upload"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
-              {form.image && (
-                <Image
-                  src={form.image}
-                  alt="Preview"
-                  width={96}
-                  height={96}
-                  className="mt-2 h-24 w-auto rounded-lg border object-cover"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* ---- Stats ---- */}
-          <div className="mt-6 border-t border-gray-100 pt-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Stats ({form.stats.length})
-              </h3>
-              <button
-                type="button"
-                onClick={addStat}
-                className="inline-flex items-center gap-1 rounded-md bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand hover:bg-brand/20"
-              >
-                <HiPlus className="h-3 w-3" /> Add Stat
-              </button>
-            </div>
-            {form.stats.length === 0 && (
-              <p className="text-xs text-gray-400">No stats added yet.</p>
-            )}
-            <div className="space-y-3">
-              {form.stats.map((stat, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
-                >
-                  <div className="grid flex-1 gap-2 sm:grid-cols-3">
-                    <input
-                      className={inputClass}
-                      placeholder="Label"
-                      value={stat.label}
-                      onChange={(e) => updateStat(i, "label", e.target.value)}
-                    />
-                    <input
-                      className={inputClass}
-                      placeholder="Value"
-                      value={stat.value}
-                      onChange={(e) => updateStat(i, "value", e.target.value)}
-                    />
-                    <input
-                      className={inputClass}
-                      placeholder="Icon name"
-                      value={stat.icon}
-                      onChange={(e) => updateStat(i, "icon", e.target.value)}
-                    />
+                    {/* Assigned sub-programmes (expandable) */}
+                    <div className="border-t border-gray-100 bg-gray-50/60 px-4 py-2.5">
+                      <button onClick={() => setExpanded(isOpen ? null : sector._id)} className="flex w-full items-center justify-between text-left">
+                        <span className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                          <HiCollection className="h-4 w-4" />
+                          {assigned.length > 0 ? `${assigned.length} sub-programme${assigned.length > 1 ? "s" : ""} assigned` : "No sub-programmes assigned"}
+                        </span>
+                        <span className="flex items-center gap-3">
+                          <Link href={`/admin/sectors/edit/${sector.slug}`} className="text-[11px] font-medium text-brand hover:underline">Manage</Link>
+                          {assigned.length > 0 && <HiChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />}
+                        </span>
+                      </button>
+                      {isOpen && assigned.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {assigned.map((sub, i) => (
+                            <Link
+                              key={sub._id}
+                              href={`/admin/subprogrammes/edit/${sub._id}`}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-600 transition-colors hover:border-brand/40 hover:text-brand"
+                            >
+                              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand/10 text-[9px] font-bold text-brand">{i + 1}</span>
+                              {sub.name}
+                              {sub.published === false && <span className="rounded bg-gray-100 px-1 text-[8px] uppercase text-gray-400">hidden</span>}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeStat(i)}
-                    className="mt-1 rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                  >
-                    <HiTrash className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
+          )}
+        </div>
+      ) : (
+        /* ============ SUB-PROGRAMMES TAB ============ */
+        <div className="space-y-4">
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+            Sub-programmes are a reusable pool. Create them here, then assign them to any programme from that programme&rsquo;s <strong>Edit</strong> page.
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <HiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search sub-programmes..."
+                value={poolSearch}
+                onChange={(e) => setPoolSearch(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              />
+            </div>
+            <Link href="/admin/subprogrammes/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand/90">
+              <HiPlus className="h-4 w-4" /> Add Sub-programme
+            </Link>
           </div>
 
-          {/* ---- Programs ---- */}
-          <div className="mt-6 border-t border-gray-100 pt-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Programs ({form.programs.length})
-              </h3>
-              <button
-                type="button"
-                onClick={addProgram}
-                className="inline-flex items-center gap-1 rounded-md bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand hover:bg-brand/20"
-              >
-                <HiPlus className="h-3 w-3" /> Add Program
-              </button>
+          {filteredSubs.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
+              <HiCollection className="mx-auto h-10 w-10 text-gray-300" />
+              <p className="mt-2 text-sm text-gray-500">{poolSearch ? "No sub-programmes match your search." : "No sub-programmes yet."}</p>
             </div>
-            {form.programs.length === 0 && (
-              <p className="text-xs text-gray-400">No programs added yet.</p>
-            )}
-            <div className="space-y-3">
-              {form.programs.map((prog, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
-                >
-                  <div className="flex-1 space-y-2">
-                    <input
-                      className={inputClass}
-                      placeholder="Program title"
-                      value={prog.title}
-                      onChange={(e) =>
-                        updateProgram(i, "title", e.target.value)
-                      }
-                    />
-                    <textarea
-                      className={inputClass}
-                      rows={2}
-                      placeholder="Program description"
-                      value={prog.description}
-                      onChange={(e) =>
-                        updateProgram(i, "description", e.target.value)
-                      }
-                    />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {filteredSubs.map((sub) => {
+                const usedBy = sectors.filter((sec) => (sec.subProgrammes ?? []).includes(sub._id));
+                return (
+                  <div key={sub._id} className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="flex gap-4 p-4">
+                      {sub.image ? (
+                        <Image src={sub.image} alt={sub.name} width={64} height={64} className="h-16 w-16 flex-shrink-0 rounded-xl border border-gray-100 object-cover" />
+                      ) : (
+                        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/10 to-brand-accent/10 text-brand">
+                          <HiPhotograph className="h-5 w-5" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="truncate text-sm font-semibold text-gray-900">{sub.name}</h3>
+                          <span className="flex-shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">/{sub.slug}</span>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500">{sub.description}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {sub.published === false ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500"><HiEyeOff className="h-3 w-3" /> Hidden</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-600"><HiEye className="h-3 w-3" /> Published</span>
+                          )}
+                          {usedBy.length > 0 ? (
+                            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">In {usedBy.map((u) => u.name).join(", ")}</span>
+                          ) : (
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600">Unassigned</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-auto flex items-center justify-end gap-1 border-t border-gray-100 bg-gray-50/60 px-4 py-2.5">
+                      <Link href={`/admin/subprogrammes/edit/${sub._id}`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-brand/10 hover:text-brand">
+                        <HiPencil className="h-4 w-4" /> Edit
+                      </Link>
+                      <button onClick={() => deleteSub(sub._id, sub.name)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600">
+                        <HiTrash className="h-4 w-4" /> Delete
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeProgram(i)}
-                    className="mt-1 rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                  >
-                    <HiTrash className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-
-          {/* ---- Achievements ---- */}
-          <div className="mt-6 border-t border-gray-100 pt-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Achievements ({form.achievements.length})
-              </h3>
-              <button
-                type="button"
-                onClick={addAchievement}
-                className="inline-flex items-center gap-1 rounded-md bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand hover:bg-brand/20"
-              >
-                <HiPlus className="h-3 w-3" /> Add Achievement
-              </button>
-            </div>
-            {form.achievements.length === 0 && (
-              <p className="text-xs text-gray-400">
-                No achievements added yet.
-              </p>
-            )}
-            <div className="space-y-2">
-              {form.achievements.map((ach, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    className={inputClass}
-                    placeholder="Achievement text"
-                    value={ach}
-                    onChange={(e) => updateAchievement(i, e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeAchievement(i)}
-                    className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                  >
-                    <HiTrash className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ---- Save / Cancel ---- */}
-          <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-5">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {saving && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              )}
-              {saving
-                ? "Saving..."
-                : editingSlug === "__new__"
-                ? "Create Sector"
-                : "Update Sector"}
-            </button>
-            <button
-              onClick={closeForm}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-          </div>
+          )}
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/*  Sectors list                                                 */}
-      {/* ============================================================ */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
-              <p className="text-sm text-gray-500">Loading sectors...</p>
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="py-20 text-center">
-            <HiPhotograph className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-2 text-sm text-gray-500">
-              {search ? "No sectors match your search." : "No sectors yet."}
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filtered.map((sector) => (
-              <div
-                key={sector._id}
-                className={`flex items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 ${
-                  editingSlug === sector.slug ? "bg-brand/5" : ""
-                }`}
-              >
-                {/* Thumbnail */}
-                {sector.image ? (
-                  <Image
-                    src={sector.image}
-                    alt={sector.name}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 flex-shrink-0 rounded-lg border object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
-                    <HiPhotograph className="h-5 w-5" />
-                  </div>
-                )}
-
-                {/* Info */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold text-gray-900">
-                      {sector.name}
-                    </h3>
-                    <span className="flex-shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
-                      /{sector.slug}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-xs text-gray-500">
-                    {sector.description}
-                  </p>
-                </div>
-
-                {/* Meta badges */}
-                <div className="hidden flex-shrink-0 items-center gap-2 md:flex">
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">
-                    {sector.programs?.length ?? 0} programs
-                  </span>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                    Order: {sector.order}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-shrink-0 items-center gap-1">
-                  <button
-                    onClick={() =>
-                      editingSlug === sector.slug
-                        ? closeForm()
-                        : openEditForm(sector)
-                    }
-                    className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-brand/10 hover:text-brand"
-                    title="Edit"
-                  >
-                    {editingSlug === sector.slug ? (
-                      <HiChevronUp className="h-4 w-4" />
-                    ) : (
-                      <HiPencil className="h-4 w-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sector.slug, sector.name)}
-                    className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
-                    title="Delete"
-                  >
-                    <HiTrash className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Quick link to seed/help could go here */}
+      <div className="pt-2 text-right">
+        <Link href="/programmes" target="_blank" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-brand">
+          <HiExternalLink className="h-3.5 w-3.5" /> View public programmes page
+        </Link>
       </div>
     </div>
+  );
+}
+
+export default function AdminProgrammesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" /></div>}>
+      <ProgrammesInner />
+    </Suspense>
   );
 }

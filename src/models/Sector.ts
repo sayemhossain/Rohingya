@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface ISectorStat {
   label: string;
@@ -11,17 +11,30 @@ export interface ISectorProgram {
   description: string;
 }
 
+export interface IGalleryImage {
+  url: string;
+  caption?: string;
+}
+
 export interface ISector extends Document {
   name: string;
   slug: string;
   description: string;
   longDescription: string;
   icon: string;
+  // Uploaded SVG/PNG icon URL — takes priority over the react-icons `icon` name.
+  iconImage: string;
   image: string;
+  // Optional image shown beside the long description on the programme page.
+  descriptionImage: string;
   stats: ISectorStat[];
   programs: ISectorProgram[];
+  gallery: IGalleryImage[];
+  // Ordered list of assigned sub-programmes (references the SubProgramme pool).
+  subProgrammes: Types.ObjectId[];
   achievements: string[];
   order: number;
+  showOnHomepage: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,7 +63,13 @@ const SectorSchema = new Schema<ISector>(
     icon: {
       type: String,
     },
+    iconImage: {
+      type: String,
+    },
     image: {
+      type: String,
+    },
+    descriptionImage: {
       type: String,
     },
     stats: [
@@ -66,14 +85,33 @@ const SectorSchema = new Schema<ISector>(
         description: { type: String },
       },
     ],
+    gallery: [
+      {
+        url: { type: String },
+        caption: { type: String },
+      },
+    ],
+    subProgrammes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'SubProgramme',
+      },
+    ],
     achievements: [{ type: String }],
     order: {
       type: Number,
       default: 0,
     },
+    showOnHomepage: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
+    // Stored in the "programmes" collection (the feature was rebranded from
+    // "Sectors" to "Our Programmes"; the model symbol stays Sector internally).
+    collection: 'programmes',
   }
 );
 

@@ -18,6 +18,7 @@ import {
   HiMenuAlt2,
   HiX,
   HiInformationCircle,
+  HiTemplate,
 } from "react-icons/hi";
 
 interface NavItem {
@@ -29,9 +30,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: HiHome },
+  { label: "Home Page", href: "/admin/home", icon: HiTemplate },
   { label: "About Page", href: "/admin/about", icon: HiInformationCircle },
   { label: "News", href: "/admin/news", icon: HiNewspaper },
-  { label: "Sectors", href: "/admin/sectors", icon: HiViewGrid },
+  { label: "Our Programmes", href: "/admin/sectors", icon: HiViewGrid },
   { label: "Resources", href: "/admin/resources", icon: HiDocument },
   { label: "Gallery", href: "/admin/gallery", icon: HiPhotograph },
   { label: "Team", href: "/admin/team", icon: HiUserGroup },

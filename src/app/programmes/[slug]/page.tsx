@@ -3,6 +3,7 @@
 import { useSector } from "@/hooks/use-api";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   HiAcademicCap,
   HiHeart,
@@ -16,6 +17,9 @@ import {
   HiCheckCircle,
 } from "react-icons/hi";
 import type { IconType } from "react-icons";
+import SubProgrammePills from "@/components/programmes/SubProgrammePills";
+import ProgrammeGallery from "@/components/programmes/ProgrammeGallery";
+import { isIconImage } from "@/lib/icons";
 
 const iconMap: Record<string, IconType> = {
   HiAcademicCap,
@@ -40,7 +44,15 @@ const gradientMap: Record<string, string> = {
   nutrition: "from-red-500 to-rose-500",
 };
 
-export default function SectorDetailPage() {
+interface SubProgramme {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image?: string;
+}
+
+export default function ProgrammeDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
 
@@ -59,25 +71,38 @@ export default function SectorDetailPage() {
   if (isError || !sector) return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Sector Not Found</h2>
-        <p className="text-gray-500 mb-6">The sector you are looking for does not exist.</p>
-        <Link href="/sectors" className="text-brand font-medium hover:text-brand-accent transition-colors">
-          Back to Sectors
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Programme Not Found</h2>
+        <p className="text-gray-500 mb-6">The programme you are looking for does not exist.</p>
+        <Link href="/programmes" className="text-brand font-medium hover:text-brand-accent transition-colors">
+          Back to Programmes
         </Link>
       </div>
     </div>
   );
 
   const Icon = iconMap[sector.icon || ""] || HiAcademicCap;
+  const iconUrl = sector.iconImage || (isIconImage(sector.icon) ? sector.icon : "");
   const gradient = gradientMap[sector.slug] || "from-brand to-brand-light";
+  const subProgrammes: SubProgramme[] = sector.subProgrammes ?? [];
 
   return (
     <>
       {/* Hero Banner */}
-      <section
-        className={`relative bg-gradient-to-br ${gradient} py-20 md:py-28`}
-      >
-        <div className="absolute inset-0 bg-black/20" />
+      <section className="relative py-20 md:py-28">
+        {sector.image ? (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${sector.image})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/70" />
+          </>
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+            <div className="absolute inset-0 bg-black/20" />
+          </>
+        )}
         <div className="container-custom relative z-10">
           <nav className="flex items-center gap-2 text-sm text-white/70 mb-6">
             <Link href="/" className="hover:text-white transition-colors">
@@ -85,101 +110,86 @@ export default function SectorDetailPage() {
             </Link>
             <span>/</span>
             <Link
-              href="/sectors"
+              href="/programmes"
               className="hover:text-white transition-colors"
             >
-              Sectors
+              Our Programmes
             </Link>
             <span>/</span>
             <span className="text-white">{sector.name}</span>
           </nav>
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Icon className="text-white text-3xl" />
+              {iconUrl ? (
+                <Image src={iconUrl} alt="" width={32} height={32} className="h-8 w-8 object-contain brightness-0 invert" />
+              ) : (
+                <Icon className="text-white text-3xl" />
+              )}
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
               {sector.name}
             </h1>
           </div>
           <p className="text-lg md:text-xl text-white/90 max-w-3xl">
-            {sector.longDescription || sector.description}
+            {sector.description}
           </p>
         </div>
       </section>
 
-      {/* Key Stats */}
-      {sector.stats && sector.stats.length > 0 && (
+      {/* Sub-programme pills */}
+      <SubProgrammePills
+        parentSlug={sector.slug}
+        items={subProgrammes.map((s) => ({ name: s.name, slug: s.slug }))}
+      />
+
+      {/* Description + image */}
+      {(() => {
+        const descImage = sector.descriptionImage || sector.image;
+        return (sector.longDescription || descImage) ? (
         <section className="section-padding bg-white">
           <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="section-title">Key Statistics</h2>
-              <p className="section-subtitle mx-auto">
-                Numbers that reflect the scale and impact of our{" "}
-                {sector.name.toLowerCase()} programs.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {sector.stats.map(
-                (stat: { label: string; value: string; icon?: string }) => (
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <div>
+                <span className="mb-3 inline-block rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
+                  About this programme
+                </span>
+                <h2 className="mb-5 text-2xl font-bold text-gray-900 md:text-3xl">
+                  How {sector.name} works at AROHI
+                </h2>
+                {sector.longDescription ? (
                   <div
-                    key={stat.label}
-                    className="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100 hover:shadow-md transition-shadow duration-300"
-                  >
-                    <p className="text-3xl md:text-4xl font-bold text-brand mb-2">
-                      {stat.value}
-                    </p>
-                    <p className="font-heading font-semibold text-gray-900 mb-1">
-                      {stat.label}
-                    </p>
-                  </div>
-                )
+                    className="prose prose-sm max-w-none text-gray-600 prose-headings:text-gray-900 prose-strong:text-gray-800 sm:prose-base"
+                    dangerouslySetInnerHTML={{ __html: sector.longDescription }}
+                  />
+                ) : (
+                  <p className="leading-relaxed text-gray-600">{sector.description}</p>
+                )}
+              </div>
+              {descImage && (
+                <div className="relative">
+                  <div className={`absolute -inset-3 -z-10 rounded-3xl bg-gradient-to-br ${gradient} opacity-10 blur-xl`} />
+                  <Image
+                    src={descImage}
+                    alt={sector.name}
+                    width={720}
+                    height={540}
+                    className="h-full w-full rounded-3xl object-cover shadow-lg ring-1 ring-black/5"
+                  />
+                </div>
               )}
             </div>
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
-      {/* Our Programs */}
-      {sector.programs && sector.programs.length > 0 && (
-        <section className="section-padding bg-gray-50">
-          <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="section-title">Our Programs</h2>
-              <p className="section-subtitle mx-auto">
-                Targeted interventions designed to address the most pressing{" "}
-                {sector.name.toLowerCase()} needs in our communities.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {sector.programs.map(
-                (
-                  program: { title: string; description: string },
-                  index: number
-                ) => (
-                  <div
-                    key={program.title}
-                    className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300"
-                  >
-                    <div className="flex items-start gap-4">
-                      <span className="flex-shrink-0 w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div>
-                        <h3 className="font-heading font-bold text-xl text-gray-900 mb-3">
-                          {program.title}
-                        </h3>
-                        <p className="text-gray-600 leading-relaxed">
-                          {program.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Smart image gallery */}
+      <ProgrammeGallery
+        images={sector.gallery}
+        title={`${sector.name} Gallery`}
+        subtitle={`Moments from our ${sector.name.toLowerCase()} work across Barisal Division.`}
+        accent={gradient}
+      />
 
       {/* Impact / Achievements */}
       {sector.achievements && sector.achievements.length > 0 && (
@@ -231,10 +241,10 @@ export default function SectorDetailPage() {
               <HiArrowRight />
             </Link>
             <Link
-              href="/sectors"
+              href="/programmes"
               className="inline-flex items-center justify-center px-8 py-3.5 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-colors duration-300"
             >
-              Explore All Sectors
+              Explore All Programmes
             </Link>
           </div>
         </div>

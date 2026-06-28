@@ -4,7 +4,7 @@ export function revalidateAll() {
   revalidatePath("/");
   revalidatePath("/about");
   revalidatePath("/news");
-  revalidatePath("/sectors");
+  revalidatePath("/programmes");
   revalidatePath("/resources");
   revalidatePath("/gallery");
   revalidatePath("/crisis-overview");
@@ -19,7 +19,15 @@ export function revalidateNews() {
 
 export function revalidateSectors() {
   revalidatePath("/");
-  revalidatePath("/sectors");
+  revalidatePath("/programmes");
+}
+
+export function revalidateSubProgrammes() {
+  // Sub-programmes can appear under any programme, so refresh the whole tree.
+  revalidatePath("/");
+  revalidatePath("/programmes");
+  revalidatePath("/programmes/[slug]", "page");
+  revalidatePath("/programmes/[slug]/[sub]", "page");
 }
 
 export function revalidateResources() {

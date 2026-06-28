@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useMenu } from "@/hooks/use-api";
-import { HiMenu, HiX, HiChevronDown } from "react-icons/hi";
+import { useMenu, useLogo, useProgrammesNav } from "@/hooks/use-api";
+import { HiMenu, HiX, HiChevronDown, HiChevronRight } from "react-icons/hi";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,7 +13,7 @@ import { HiMenu, HiX, HiChevronDown } from "react-icons/hi";
 interface NavItem {
   label: string;
   href: string;
-  children?: { label: string; href: string }[];
+  children?: NavItem[];
 }
 
 // ---------------------------------------------------------------------------
@@ -22,18 +23,18 @@ const defaultNavLinks: NavItem[] = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   {
-    href: "/sectors",
-    label: "Sectors",
+    href: "/programmes",
+    label: "Our Programmes",
     children: [
-      { label: "Health", href: "/sectors/health" },
-      { label: "Nutrition", href: "/sectors/nutrition" },
-      { label: "Education", href: "/sectors/education" },
-      { label: "WaSH", href: "/sectors/wash" },
-      { label: "Food Security & Livelihood", href: "/sectors/food-security-and-livelihood" },
-      { label: "DRR", href: "/sectors/drr" },
-      { label: "Climate Change", href: "/sectors/climate-change" },
-      { label: "Protection", href: "/sectors/protection" },
-      { label: "Agriculture", href: "/sectors/agriculture" },
+      { label: "Health", href: "/programmes/health" },
+      { label: "Nutrition", href: "/programmes/nutrition" },
+      { label: "Education", href: "/programmes/education" },
+      { label: "WaSH", href: "/programmes/wash" },
+      { label: "Food Security & Livelihood", href: "/programmes/food-security-and-livelihood" },
+      { label: "DRR", href: "/programmes/drr" },
+      { label: "Climate Change", href: "/programmes/climate-change" },
+      { label: "Protection", href: "/programmes/protection" },
+      { label: "Agriculture", href: "/programmes/agriculture" },
     ],
   },
   { href: "/news", label: "News & Stories" },
@@ -52,11 +53,36 @@ interface NavbarProps {
 
 const Navbar = ({ navLinks }: NavbarProps) => {
   const { data: menuData, isLoading: menuLoading } = useMenu();
-  const menuItems: NavItem[] = menuData ?? navLinks ?? defaultNavLinks;
+  const { data: logo, isLoading: logoLoading } = useLogo();
+  const { data: progNav } = useProgrammesNav();
+
+  // Merge live programmes + sub-programmes into the "Our Programmes" item so the
+  // navbar always reflects what admins create (3rd-level flyout, auto-generated).
+  const menuItems: NavItem[] = useMemo(() => {
+    const base: NavItem[] = menuData ?? navLinks ?? defaultNavLinks;
+    if (!progNav || progNav.length === 0) return base;
+    return base.map((item) =>
+      item.href === "/programmes"
+        ? {
+            ...item,
+            children: progNav.map((p) => ({
+              label: p.name,
+              href: `/programmes/${p.slug}`,
+              children: (p.subProgrammes ?? []).map((s) => ({
+                label: s.name,
+                href: `/programmes/${p.slug}/${s.slug}`,
+              })),
+            })),
+          }
+        : item
+    );
+  }, [menuData, navLinks, progNav]);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
+  const [mobileSubExpanded, setMobileSubExpanded] = useState<string | null>(null);
   const pathname = usePathname();
 
   // Ref for close‑delay so the dropdown stays open while moving to it
@@ -73,6 +99,7 @@ const Navbar = ({ navLinks }: NavbarProps) => {
   useEffect(() => {
     setMobileOpen(false);
     setMobileExpanded(null);
+    setMobileSubExpanded(null);
   }, [pathname]);
 
   // Prevent body scroll when mobile menu is open
@@ -100,13 +127,14 @@ const Navbar = ({ navLinks }: NavbarProps) => {
   const scheduleClose = () => {
     closeTimeout.current = setTimeout(() => {
       setDesktopDropdown(null);
-    }, 100);
+    }, 120);
   };
 
-  // ---- Mobile accordion toggle ----
-  const toggleMobileExpanded = (key: string) => {
+  // ---- Mobile accordion toggles ----
+  const toggleMobileExpanded = (key: string) =>
     setMobileExpanded((prev) => (prev === key ? null : key));
-  };
+  const toggleMobileSubExpanded = (key: string) =>
+    setMobileSubExpanded((prev) => (prev === key ? null : key));
 
   return (
     <header
@@ -119,14 +147,33 @@ const Navbar = ({ navLinks }: NavbarProps) => {
 
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex flex-col leading-tight">
-          <span className="font-heading text-2xl font-bold tracking-tight text-brand lg:text-3xl">
-            AROHI
-          </span>
-          <span className="font-body text-[10px] uppercase tracking-[0.2em] text-gray-500">
-            Rural Opportunities &amp; Human Initiatives
-          </span>
-        </Link>
+        {logoLoading ? (
+          <div className="flex items-center" aria-hidden="true">
+            <div className="h-12 w-40 animate-pulse rounded-md bg-gray-200 lg:h-14 lg:w-48" />
+          </div>
+        ) : (
+          <Link href="/" className="flex items-center">
+            {logo ? (
+              <Image
+                src={logo}
+                alt="AROHI"
+                width={200}
+                height={56}
+                priority
+                className="h-12 w-auto object-contain lg:h-14"
+              />
+            ) : (
+              <span className="flex flex-col leading-tight">
+                <span className="font-heading text-2xl font-bold tracking-tight text-brand lg:text-3xl">
+                  AROHI
+                </span>
+                <span className="font-body text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                  Rural Opportunities &amp; Human Initiatives
+                </span>
+              </span>
+            )}
+          </Link>
+        )}
 
         {/* ==================== Desktop links ==================== */}
         {menuLoading && !navLinks ? (
@@ -136,91 +183,126 @@ const Navbar = ({ navLinks }: NavbarProps) => {
             ))}
           </div>
         ) : (
-        <ul className="hidden items-center gap-1 lg:flex">
-          {menuItems.map((item: NavItem) => {
-            const hasChildren = item.children && item.children.length > 0;
+          <ul className="hidden items-center gap-1 lg:flex">
+            {menuItems.map((item: NavItem) => {
+              const hasChildren = item.children && item.children.length > 0;
 
-            if (!hasChildren) {
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`font-body relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                      isActive(item.href)
-                        ? "text-brand"
-                        : "text-gray-600 hover:text-brand"
-                    }`}
-                  >
-                    {item.label}
-                    <span
-                      className={`absolute bottom-0 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-brand-accent transition-all duration-300 ${
-                        isActive(item.href) ? "w-4/5" : "w-0"
+              if (!hasChildren) {
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`font-body relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                        isActive(item.href) ? "text-brand" : "text-gray-600 hover:text-brand"
                       }`}
-                    />
-                  </Link>
+                    >
+                      {item.label}
+                      <span
+                        className={`absolute bottom-0 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-brand-accent transition-all duration-300 ${
+                          isActive(item.href) ? "w-4/5" : "w-0"
+                        }`}
+                      />
+                    </Link>
+                  </li>
+                );
+              }
+
+              // ---- Item with dropdown ----
+              return (
+                <li key={item.href} className="relative">
+                  <div
+                    onMouseEnter={() => openDropdown(item.href)}
+                    onMouseLeave={scheduleClose}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`font-body relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                        isActive(item.href) ? "text-brand" : "text-gray-600 hover:text-brand"
+                      }`}
+                    >
+                      {item.label}
+                      <HiChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${
+                          desktopDropdown === item.href ? "rotate-180" : ""
+                        }`}
+                      />
+                      <span
+                        className={`absolute bottom-0 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-brand-accent transition-all duration-300 ${
+                          isActive(item.href) ? "w-4/5" : "w-0"
+                        }`}
+                      />
+                    </Link>
+
+                    {/* Dropdown panel (overflow-visible so 3rd-level flyout can escape) */}
+                    <div
+                      className={`absolute left-0 top-full z-50 min-w-[220px] rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-200 ${
+                        desktopDropdown === item.href
+                          ? "pointer-events-auto translate-y-0 opacity-100"
+                          : "pointer-events-none -translate-y-1 opacity-0"
+                      }`}
+                    >
+                      <ul className="py-1">
+                        {item.children!.map((child) => {
+                          const hasGrandchildren = child.children && child.children.length > 0;
+                          if (!hasGrandchildren) {
+                            return (
+                              <li key={child.href}>
+                                <Link
+                                  href={child.href}
+                                  className={`block px-4 py-2 text-sm font-medium transition-colors duration-150 ${
+                                    isActive(child.href)
+                                      ? "bg-gray-50 text-brand"
+                                      : "text-gray-700 hover:bg-gray-50 hover:text-brand"
+                                  }`}
+                                >
+                                  {child.label}
+                                </Link>
+                              </li>
+                            );
+                          }
+                          // ---- Child with 3rd-level flyout (sub-programmes) ----
+                          return (
+                            <li key={child.href} className="group/sub relative">
+                              <Link
+                                href={child.href}
+                                className={`flex items-center justify-between gap-2 px-4 py-2 text-sm font-medium transition-colors duration-150 ${
+                                  isActive(child.href)
+                                    ? "bg-gray-50 text-brand"
+                                    : "text-gray-700 hover:bg-gray-50 hover:text-brand"
+                                }`}
+                              >
+                                {child.label}
+                                <HiChevronRight className="h-4 w-4 opacity-40 group-hover/sub:opacity-100" />
+                              </Link>
+                              {/* Nested flyout */}
+                              <div className="invisible absolute left-full top-0 z-50 -ml-1 min-w-[210px] translate-x-1 rounded-lg border border-gray-200 bg-white opacity-0 shadow-lg transition-all duration-200 group-hover/sub:visible group-hover/sub:translate-x-0 group-hover/sub:opacity-100">
+                                <ul className="py-1">
+                                  {child.children!.map((gc) => (
+                                    <li key={gc.href}>
+                                      <Link
+                                        href={gc.href}
+                                        className={`block px-4 py-2 text-sm font-medium transition-colors duration-150 ${
+                                          isActive(gc.href)
+                                            ? "bg-gray-50 text-brand"
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-brand"
+                                        }`}
+                                      >
+                                        {gc.label}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
                 </li>
               );
-            }
-
-            // ---- Item with dropdown ----
-            return (
-              <li key={item.href} className="relative">
-                <div
-                  onMouseEnter={() => openDropdown(item.href)}
-                  onMouseLeave={scheduleClose}
-                >
-                  {/* Parent link + chevron */}
-                  <Link
-                    href={item.href}
-                    className={`font-body relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                      isActive(item.href)
-                        ? "text-brand"
-                        : "text-gray-600 hover:text-brand"
-                    }`}
-                  >
-                    {item.label}
-                    <HiChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${
-                        desktopDropdown === item.href ? "rotate-180" : ""
-                      }`}
-                    />
-                    <span
-                      className={`absolute bottom-0 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-brand-accent transition-all duration-300 ${
-                        isActive(item.href) ? "w-4/5" : "w-0"
-                      }`}
-                    />
-                  </Link>
-
-                  {/* Dropdown panel */}
-                  <div
-                    className={`absolute left-0 top-full z-50 min-w-[200px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-200 ${
-                      desktopDropdown === item.href
-                        ? "pointer-events-auto translate-y-0 opacity-100"
-                        : "pointer-events-none -translate-y-1 opacity-0"
-                    }`}
-                  >
-                    <ul className="py-1">
-                      {item.children!.map((child) => (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            className={`block px-4 py-2 text-sm font-medium transition-colors duration-150 ${
-                              isActive(child.href)
-                                ? "bg-gray-50 text-brand"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-brand"
-                            }`}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+            })}
+          </ul>
         )}
 
         {/* Right side: CTA + hamburger */}
@@ -231,8 +313,6 @@ const Navbar = ({ navLinks }: NavbarProps) => {
           >
             Donate Now
           </Link>
-
-          {/* Hamburger */}
           <button
             type="button"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -244,117 +324,159 @@ const Navbar = ({ navLinks }: NavbarProps) => {
         </div>
       </nav>
 
-      {/* ==================== Mobile overlay ==================== */}
-      <div
-        className={`fixed inset-0 top-[calc(3.5rem+4px)] z-40 bg-black/40 transition-opacity duration-300 lg:hidden ${
-          mobileOpen
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
-        onClick={() => setMobileOpen(false)}
-      />
+      {/* ==================== Mobile menu ==================== */}
+      <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden lg:hidden">
+        <div
+          className={`absolute inset-0 top-[calc(3.5rem+4px)] bg-black/40 transition-opacity duration-300 ${
+            mobileOpen ? "pointer-events-auto opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileOpen(false)}
+        />
 
-      {/* ==================== Mobile menu panel ==================== */}
-      <div
-        className={`fixed right-0 top-[calc(3.5rem+4px)] z-50 h-[calc(100vh-3.5rem-4px)] w-72 overflow-y-auto bg-white shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <ul className="flex flex-col gap-1 px-4 py-6">
-          {menuItems.map((item: NavItem) => {
-            const hasChildren = item.children && item.children.length > 0;
-            const isExpanded = mobileExpanded === item.href;
+        <div
+          className={`absolute bottom-0 right-0 top-[calc(3.5rem+4px)] w-72 overflow-y-auto bg-white shadow-xl transition-transform duration-300 ease-in-out ${
+            mobileOpen ? "pointer-events-auto translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <ul className="flex flex-col gap-1 px-4 py-6">
+            {menuItems.map((item: NavItem) => {
+              const hasChildren = item.children && item.children.length > 0;
+              const isExpanded = mobileExpanded === item.href;
 
-            if (!hasChildren) {
+              if (!hasChildren) {
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`font-body block rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ${
+                        isActive(item.href)
+                          ? "bg-brand/5 text-brand"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-brand"
+                      }`}
+                    >
+                      {isActive(item.href) && (
+                        <span className="mr-2 inline-block h-2 w-2 rounded-full bg-brand-accent" />
+                      )}
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              }
+
               return (
                 <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`font-body block rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ${
+                  <button
+                    type="button"
+                    onClick={() => toggleMobileExpanded(item.href)}
+                    className={`font-body flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ${
                       isActive(item.href)
                         ? "bg-brand/5 text-brand"
                         : "text-gray-700 hover:bg-gray-50 hover:text-brand"
                     }`}
                   >
-                    {isActive(item.href) && (
-                      <span className="mr-2 inline-block h-2 w-2 rounded-full bg-brand-accent" />
-                    )}
-                    {item.label}
-                  </Link>
+                    <span className="flex items-center">
+                      {isActive(item.href) && (
+                        <span className="mr-2 inline-block h-2 w-2 rounded-full bg-brand-accent" />
+                      )}
+                      {item.label}
+                    </span>
+                    <HiChevronDown
+                      className={`h-5 w-5 shrink-0 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Children (accordion) */}
+                  {isExpanded && (
+                    <ul className="pb-1">
+                      {item.children!.map((child) => {
+                        const hasGrandchildren = child.children && child.children.length > 0;
+                        const subExpanded = mobileSubExpanded === child.href;
+                        if (!hasGrandchildren) {
+                          return (
+                            <li key={child.href}>
+                              <Link
+                                href={child.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`block rounded-md py-2 pl-8 pr-4 text-sm font-medium transition-colors duration-200 ${
+                                  isActive(child.href)
+                                    ? "text-brand"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-brand"
+                                }`}
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          );
+                        }
+                        return (
+                          <li key={child.href}>
+                            <div className="flex items-center">
+                              <Link
+                                href={child.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`flex-1 rounded-md py-2 pl-8 pr-2 text-sm font-medium transition-colors duration-200 ${
+                                  isActive(child.href)
+                                    ? "text-brand"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-brand"
+                                }`}
+                              >
+                                {child.label}
+                              </Link>
+                              <button
+                                type="button"
+                                aria-label="Toggle sub-programmes"
+                                onClick={() => toggleMobileSubExpanded(child.href)}
+                                className="rounded-md p-2 text-gray-400 hover:text-brand"
+                              >
+                                <HiChevronDown
+                                  className={`h-4 w-4 transition-transform duration-200 ${
+                                    subExpanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                            {subExpanded && (
+                              <ul className="pb-1">
+                                {child.children!.map((gc) => (
+                                  <li key={gc.href}>
+                                    <Link
+                                      href={gc.href}
+                                      onClick={() => setMobileOpen(false)}
+                                      className={`block rounded-md py-2 pl-12 pr-4 text-sm transition-colors duration-200 ${
+                                        isActive(gc.href)
+                                          ? "text-brand"
+                                          : "text-gray-500 hover:bg-gray-50 hover:text-brand"
+                                      }`}
+                                    >
+                                      {gc.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
-            }
+            })}
 
-            // ---- Item with accordion children ----
-            return (
-              <li key={item.href}>
-                {/* Parent row */}
-                <button
-                  type="button"
-                  onClick={() => toggleMobileExpanded(item.href)}
-                  className={`font-body flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ${
-                    isActive(item.href)
-                      ? "bg-brand/5 text-brand"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-brand"
-                  }`}
-                >
-                  <span className="flex items-center">
-                    {isActive(item.href) && (
-                      <span className="mr-2 inline-block h-2 w-2 rounded-full bg-brand-accent" />
-                    )}
-                    {item.label}
-                  </span>
-                  <HiChevronDown
-                    className={`h-5 w-5 shrink-0 transition-transform duration-200 ${
-                      isExpanded ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Children (accordion) */}
-                <div
-                  className="overflow-hidden transition-all duration-300"
-                  style={{
-                    maxHeight: isExpanded
-                      ? `${item.children!.length * 48}px`
-                      : "0px",
-                    opacity: isExpanded ? 1 : 0,
-                  }}
-                >
-                  <ul className="pb-1">
-                    {item.children!.map((child) => (
-                      <li key={child.href}>
-                        <Link
-                          href={child.href}
-                          onClick={() => setMobileOpen(false)}
-                          className={`block rounded-md py-2 pl-8 pr-4 text-sm font-medium transition-colors duration-200 ${
-                            isActive(child.href)
-                              ? "text-brand"
-                              : "text-gray-600 hover:bg-gray-50 hover:text-brand"
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            );
-          })}
-
-          {/* Mobile donate button */}
-          <li className="mt-4 px-4">
-            <Link
-              href="/get-involved#donate"
-              onClick={() => setMobileOpen(false)}
-              className="font-body block w-full rounded-full bg-brand-accent py-3 text-center text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-accent/90 hover:shadow-md"
-            >
-              Donate Now
-            </Link>
-          </li>
-        </ul>
+            <li className="mt-4 px-4">
+              <Link
+                href="/get-involved#donate"
+                onClick={() => setMobileOpen(false)}
+                className="font-body block w-full rounded-full bg-brand-accent py-3 text-center text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-accent/90 hover:shadow-md"
+              >
+                Donate Now
+              </Link>
+            </li>
+          </ul>
+        </div>
       </div>
     </header>
   );

@@ -19,7 +19,24 @@ export function useHomepage() {
         heroSlides: unknown;
         stats: unknown;
         partnerLogos: unknown;
+        journey: unknown;
+        impactStories: unknown;
       }>("/api/homepage"),
+  });
+}
+
+// Site logo
+export function useLogo() {
+  return useQuery({
+    queryKey: ["site_logo"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings?key=site_logo");
+      const json = await res.json();
+      if (json.success && json.data?.value) {
+        return json.data.value as string;
+      }
+      return null;
+    },
   });
 }
 
@@ -63,12 +80,23 @@ export function useSectorsList() {
   });
 }
 
-// Single sector
+// Single sector (includes its published sub-programmes as `subProgrammes`)
 export function useSector(slug: string) {
   return useQuery({
     queryKey: ["sectors", slug],
     queryFn: () => fetcher<Record<string, unknown>>(`/api/sectors/${slug}`),
     enabled: !!slug,
+  });
+}
+
+// Programmes nav tree (programmes + their sub-programmes) for the navbar flyout
+export function useProgrammesNav() {
+  return useQuery({
+    queryKey: ["programmes-nav"],
+    queryFn: () =>
+      fetcher<
+        { name: string; slug: string; subProgrammes: { name: string; slug: string }[] }[]
+      >("/api/programmes-nav"),
   });
 }
 
